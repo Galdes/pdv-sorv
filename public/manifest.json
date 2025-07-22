@@ -1,0 +1,21 @@
+{
+  "name": "Talos - Sistema de Comandas",
+  "short_name": "Talos Comandas",
+  "description": "Sistema de comandas digitais para bares e restaurantes",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1F2937",
+  "theme_color": "#F59E0B",
+  "icons": [
+    {
+      "src": "/talos-favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    }
+  ]
+} 
