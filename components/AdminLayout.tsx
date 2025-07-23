@@ -202,7 +202,7 @@ export function AdminInput({
     <div className={className}>
       {label && (
         <label className={`block text-sm font-medium mb-1 ${
-          theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+          theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
         }`}>
           {label}
           {tooltip && (
@@ -240,7 +240,7 @@ export function AdminTextarea({
     <div className={className}>
       {label && (
         <label className={`block text-sm font-medium mb-1 ${
-          theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+          theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
         }`}>
           {label}
           {tooltip && (
@@ -311,8 +311,8 @@ export function AdminTableHeaderCell({
   const { theme } = useTheme();
   
   return (
-    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
-      theme === 'dark' ? 'text-gray-300' : 'text-gray-500'
+    <th className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${
+      theme === 'dark' ? 'text-white' : 'text-gray-700'
     } ${className}`}>
       {children}
     </th>
@@ -344,8 +344,12 @@ export function AdminTableCell({
   children: React.ReactNode; 
   className?: string;
 }) {
+  const { theme } = useTheme();
+  
   return (
-    <td className={`px-6 py-4 whitespace-nowrap text-sm ${className}`}>
+    <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+      theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
+    } ${className}`}>
       {children}
     </td>
   );

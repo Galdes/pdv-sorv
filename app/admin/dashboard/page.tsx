@@ -187,35 +187,8 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Cards de Ação */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <AdminCard>
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-2">Gerenciar Produtos</h3>
-            <p className="text-sm text-gray-600 mb-4">Adicionar, editar e remover produtos</p>
-            <AdminButton
-              variant="primary"
-              onClick={() => router.push('/admin/produtos')}
-              title="Acessar gerenciamento de produtos"
-            >
-              Acessar
-            </AdminButton>
-          </div>
-        </AdminCard>
-
-        <AdminCard>
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-2">Gerenciar Mesas</h3>
-            <p className="text-sm text-gray-600 mb-4">Configurar mesas e QR Codes</p>
-            <AdminButton
-              variant="primary"
-              onClick={() => router.push('/admin/mesas')}
-              title="Acessar gerenciamento de mesas"
-            >
-              Acessar
-            </AdminButton>
-          </div>
-        </AdminCard>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+        {/* GRUPO 1: OPERAÇÕES PRINCIPAIS (AZUL) */}
         <AdminCard>
           <div className="text-center">
             <h3 className="text-lg font-semibold mb-2">💰 Pagar Mesa</h3>
@@ -230,37 +203,109 @@ export default function AdminDashboardPage() {
           </div>
         </AdminCard>
 
-                            <AdminCard>
-                      <div className="text-center">
-                        <h3 className="text-lg font-semibold mb-2">Cozinha</h3>
-                        <p className="text-sm text-gray-600 mb-4">Pedidos para preparação</p>
-                        <AdminButton
-                          variant="warning"
-                          onClick={() => router.push('/admin/cozinha')}
-                          title="Acessar painel da cozinha"
-                        >
-                          Acessar
-                        </AdminButton>
-                      </div>
-                    </AdminCard>
-
-                    <AdminCard>
-                      <div className="text-center">
-                        <h3 className="text-lg font-semibold mb-2">Ver Pedidos</h3>
-                        <p className="text-sm text-gray-600 mb-4">Visualizar e gerenciar pedidos</p>
-                        <AdminButton
-                          variant="primary"
-                          onClick={() => router.push('/admin/pedidos')}
-                          title="Acessar gerenciamento de pedidos"
-                        >
-                          Acessar
-                        </AdminButton>
-                      </div>
-                    </AdminCard>
+        <AdminCard>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">🍽️ Cozinha</h3>
+            <p className="text-sm text-gray-600 mb-4">Pedidos para preparação</p>
+            <AdminButton
+              variant="warning"
+              onClick={() => router.push('/admin/cozinha')}
+              title="Acessar painel da cozinha"
+            >
+              Acessar
+            </AdminButton>
+          </div>
+        </AdminCard>
 
         <AdminCard>
           <div className="text-center">
-            <h3 className="text-lg font-semibold mb-2">Usuários</h3>
+            <h3 className="text-lg font-semibold mb-2">📋 Ver Pedidos</h3>
+            <p className="text-sm text-gray-600 mb-4">Visualizar e gerenciar pedidos</p>
+            <AdminButton
+              variant="primary"
+              onClick={() => router.push('/admin/pedidos')}
+              title="Acessar gerenciamento de pedidos"
+            >
+              Acessar
+            </AdminButton>
+          </div>
+        </AdminCard>
+
+        <AdminCard>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">🚚 Delivery</h3>
+            <p className="text-sm text-gray-600 mb-4">Gerenciar pedidos de delivery</p>
+            <AdminButton
+              variant="success"
+              onClick={() => router.push('/admin/delivery')}
+              title="Acessar gerenciamento de delivery"
+            >
+              Acessar
+            </AdminButton>
+          </div>
+        </AdminCard>
+
+        {/* GRUPO 2: CONFIGURAÇÕES DE PRODUTOS (AZUL) */}
+        <AdminCard>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">🍦 Gerenciar Produtos</h3>
+            <p className="text-sm text-gray-600 mb-4">Adicionar, editar e remover produtos</p>
+            <AdminButton
+              variant="primary"
+              onClick={() => router.push('/admin/produtos')}
+              title="Acessar gerenciamento de produtos"
+            >
+              Acessar
+            </AdminButton>
+          </div>
+        </AdminCard>
+
+        <AdminCard>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">🏷️ Categorias</h3>
+            <p className="text-sm text-gray-600 mb-4">Organizar produtos por categorias</p>
+            <AdminButton
+              variant="primary"
+              onClick={() => router.push('/admin/categorias')}
+              title="Acessar gerenciamento de categorias"
+            >
+              Acessar
+            </AdminButton>
+          </div>
+        </AdminCard>
+
+        <AdminCard>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">🍨 Sabores</h3>
+            <p className="text-sm text-gray-600 mb-4">Definir sabores disponíveis</p>
+            <AdminButton
+              variant="primary"
+              onClick={() => router.push('/admin/sabores')}
+              title="Acessar gerenciamento de sabores"
+            >
+              Acessar
+            </AdminButton>
+          </div>
+        </AdminCard>
+
+        {/* GRUPO 3: CONFIGURAÇÕES DO SISTEMA (AZUL) */}
+        <AdminCard>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">🪑 Gerenciar Mesas</h3>
+            <p className="text-sm text-gray-600 mb-4">Configurar mesas e QR Codes</p>
+            <AdminButton
+              variant="primary"
+              onClick={() => router.push('/admin/mesas')}
+              title="Acessar gerenciamento de mesas"
+            >
+              Acessar
+            </AdminButton>
+          </div>
+        </AdminCard>
+
+        <AdminCard>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">👥 Usuários</h3>
             <p className="text-sm text-gray-600 mb-4">Gerenciar garçons e admins</p>
             <AdminButton
               variant="primary"

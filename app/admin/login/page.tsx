@@ -4,14 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import bcrypt from 'bcryptjs';
 import { supabase } from '../../../lib/supabaseClient';
-import type { FormLogin } from '../../../lib/types';
-import AdminLayout, { AdminCard, AdminButton, AdminInput } from '../../../components/AdminLayout';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<FormLogin>({
+  const [form, setForm] = useState({
     email: '',
     senha: ''
   });
@@ -99,31 +97,37 @@ export default function AdminLoginPage() {
               Digite suas credenciais para acessar o painel
             </p>
           </div>
-
+          
           <form onSubmit={handleSubmit} className="space-y-4">
-            <AdminInput
-              label="Email"
-              tooltip="Email cadastrado no sistema"
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="admin@bar.com"
-              required
-              title="Digite seu email de administrador"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="seuemail@email.com"
+                required
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
             
-            <AdminInput
-              label="Senha"
-              tooltip="Senha de acesso ao painel"
-              type="password"
-              name="senha"
-              value={form.senha}
-              onChange={handleChange}
-              placeholder="••••••••"
-              required
-              title="Digite sua senha"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Senha
+              </label>
+              <input
+                type="password"
+                name="senha"
+                value={form.senha}
+                onChange={handleChange}
+                placeholder="••••••••"
+                required
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
             
             {error && (
               <div className="text-red-600 text-sm text-center">
@@ -131,15 +135,13 @@ export default function AdminLoginPage() {
               </div>
             )}
             
-            <AdminButton
+            <button
               type="submit"
-              variant="primary"
-              className="w-full"
               disabled={loading}
-              title="Fazer login no sistema"
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Entrando...' : 'Entrar'}
-            </AdminButton>
+            </button>
           </form>
           
           <div className="mt-6 text-center text-sm text-gray-600">
@@ -147,18 +149,19 @@ export default function AdminLoginPage() {
             <div className="space-y-3">
               <div className="border-l-4 border-purple-500 pl-3 py-2 bg-purple-50 rounded-r">
                 <p className="font-medium text-purple-800">Dono do Bar:</p>
-                <p className="text-purple-700">Email: dono@bar.com</p>
-                <p className="text-purple-700">Senha: dono123</p>
+                <p className="text-purple-900">Email: dono@bar.com</p>
+                <p className="text-purple-900">Senha: dono123</p>
               </div>
               <div className="border-l-4 border-blue-500 pl-3 py-2 bg-blue-50 rounded-r">
                 <p className="font-medium text-blue-800">Garçom:</p>
-                <p className="text-blue-700">Email: garcon@bar.com</p>
-                <p className="text-blue-700">Senha: garcon123</p>
+                <p className="text-blue-900">Email: garcon@bar.com</p>
+                <p className="text-blue-900">Senha: garcon123</p>
               </div>
             </div>
           </div>
         </div>
       </div>
+      
       <footer className="w-full py-6 flex-shrink-0">
         <div className="text-center">
           <p className="text-sm text-gray-400">

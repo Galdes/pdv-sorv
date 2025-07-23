@@ -13,9 +13,11 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Carregar tema do localStorage
+    setMounted(true);
+    // Carregar tema do localStorage apenas no cliente
     const savedTheme = localStorage.getItem('adminTheme') as Theme;
     if (savedTheme) {
       setTheme(savedTheme);
@@ -23,16 +25,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Aplicar tema ao documento
+    if (!mounted) return;
+    
+    // Aplicar tema ao documento apenas no cliente
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
     localStorage.setItem('adminTheme', theme);
-  }, [theme]);
+  }, [theme, mounted]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
+  // Sempre fornecer o contexto, mesmo durante hidratação
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}

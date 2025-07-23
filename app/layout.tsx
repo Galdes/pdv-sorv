@@ -6,8 +6,8 @@ import { ThemeProvider } from "../lib/themeContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Talos - Sistema de Comandas",
-  description: "Sistema de comandas digitais para bares e restaurantes - Desenvolvido pela Talos Automações e Sistemas Inteligentes",
+  title: "Sorveteria Conteiner - Sistema de Comandas",
+  description: "Sistema de comandas digitais para Sorveteria Conteiner - Desenvolvido pela Talos Automações e Sistemas Inteligentes",
   icons: {
     icon: [
       {
@@ -22,8 +22,6 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   manifest: '/manifest.json',
-  themeColor: '#F59E0B',
-  viewport: 'width=device-width, initial-scale=1',
 };
 
 export default function RootLayout({
