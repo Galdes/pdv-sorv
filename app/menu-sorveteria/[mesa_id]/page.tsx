@@ -309,7 +309,7 @@ export default function MenuSorveteriaPage({ params }: { params: Promise<{ mesa_
             
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-2">
-                Selecione até {produtoSelecionado.max_sabores} sabor{produtoSelecionado.max_sabores > 1 ? 'es' : ''}:
+                Selecione até {produtoSelecionado.max_sabores || 1} sabor{(produtoSelecionado.max_sabores || 1) > 1 ? 'es' : ''}:
               </p>
               <select
                 multiple
