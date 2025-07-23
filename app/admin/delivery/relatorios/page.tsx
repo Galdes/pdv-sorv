@@ -33,14 +33,14 @@ interface PedidoRelatorio {
   valor_total: number;
   status: string;
   tipo_servico: string;
-  enderecos_entrega: {
+  enderecos_entrega: Array<{
     nome_destinatario: string;
-  } | null;
+  }> | null;
   itens_pedido_externo: Array<{
     quantidade: number;
-    produtos: {
+    produtos: Array<{
       nome: string;
-    };
+    }>;
   }>;
 }
 
@@ -172,7 +172,7 @@ export default function RelatoriosDeliveryPage() {
       ...pedidos.map(pedido => [
         pedido.id,
         new Date(pedido.created_at).toLocaleDateString('pt-BR'),
-        pedido.enderecos_entrega?.nome_destinatario || 'N/A',
+        pedido.enderecos_entrega?.[0]?.nome_destinatario || 'N/A',
         `R$ ${pedido.valor_total.toFixed(2)}`,
         pedido.status,
         pedido.tipo_servico
@@ -453,7 +453,7 @@ export default function RelatoriosDeliveryPage() {
                       #{pedido.id.slice(0, 8)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
-                      {pedido.enderecos_entrega?.nome_destinatario || 'N/A'}
+                      {pedido.enderecos_entrega?.[0]?.nome_destinatario || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                       {new Date(pedido.created_at).toLocaleDateString('pt-BR')}
