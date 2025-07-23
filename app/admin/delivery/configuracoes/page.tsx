@@ -184,7 +184,7 @@ export default function ConfiguracoesDeliveryPage() {
                 step="0.01"
                 min="0"
                 value={config.valor_minimo_pedido}
-                onChange={(e) => setConfig(prev => ({ ...prev, valor_minimo_pedido: parseFloat(e.target.value) || 0 }))}
+                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig(prev => ({ ...prev, valor_minimo_pedido: parseFloat(e.target.value) || 0 }))}
               />
 
               <AdminInput
@@ -192,7 +192,7 @@ export default function ConfiguracoesDeliveryPage() {
                 type="number"
                 min="1"
                 value={config.tempo_estimado_min}
-                onChange={(e) => setConfig(prev => ({ ...prev, tempo_estimado_min: parseInt(e.target.value) || 30 }))}
+                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig(prev => ({ ...prev, tempo_estimado_min: parseInt(e.target.value) || 30 }))}
               />
             </div>
           </AdminCard>
@@ -208,7 +208,7 @@ export default function ConfiguracoesDeliveryPage() {
                 step="0.01"
                 min="0"
                 value={config.taxa_entrega_fixa}
-                onChange={(e) => setConfig(prev => ({ ...prev, taxa_entrega_fixa: parseFloat(e.target.value) || 0 }))}
+                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig(prev => ({ ...prev, taxa_entrega_fixa: parseFloat(e.target.value) || 0 }))}
               />
 
               <AdminInput
@@ -217,7 +217,7 @@ export default function ConfiguracoesDeliveryPage() {
                 step="0.01"
                 min="0"
                 value={config.taxa_entrega_por_km}
-                onChange={(e) => setConfig(prev => ({ ...prev, taxa_entrega_por_km: parseFloat(e.target.value) || 0 }))}
+                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig(prev => ({ ...prev, taxa_entrega_por_km: parseFloat(e.target.value) || 0 }))}
               />
 
               <AdminInput
@@ -226,7 +226,7 @@ export default function ConfiguracoesDeliveryPage() {
                 step="0.1"
                 min="0"
                 value={config.raio_entrega_km}
-                onChange={(e) => setConfig(prev => ({ ...prev, raio_entrega_km: parseFloat(e.target.value) || 5 }))}
+                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig(prev => ({ ...prev, raio_entrega_km: parseFloat(e.target.value) || 5 }))}
               />
             </div>
           </AdminCard>
@@ -240,14 +240,14 @@ export default function ConfiguracoesDeliveryPage() {
                 label="Horário de início"
                 type="time"
                 value={config.horario_inicio}
-                onChange={(e) => setConfig(prev => ({ ...prev, horario_inicio: e.target.value }))}
+                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig(prev => ({ ...prev, horario_inicio: e.target.value }))}
               />
 
               <AdminInput
                 label="Horário de fim"
                 type="time"
                 value={config.horario_fim}
-                onChange={(e) => setConfig(prev => ({ ...prev, horario_fim: e.target.value }))}
+                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig(prev => ({ ...prev, horario_fim: e.target.value }))}
               />
 
               <div>
