@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, Menu, Clock, Truck, Store, Phone, MapPin, AlertTriangle, XCircle } from 'lucide-react';
+import { ShoppingCart, Menu, Clock, Truck, Store, Phone, MapPin, AlertTriangle, XCircle, Search } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 
 interface ConfigDelivery {
@@ -307,13 +307,23 @@ export default function DeliveryHome() {
         </div>
 
         {/* CTA Final */}
-        <div className="text-center mt-8">
+        <div className="text-center mt-8 space-y-4">
           <button
             onClick={irParaCardapio}
             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             🍦 Começar a Pedir Agora
           </button>
+          
+          <div>
+            <button
+              onClick={() => router.push('/delivery/rastrear')}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium text-sm mx-auto"
+            >
+              <Search size={16} />
+              📋 Rastrear Pedido Existente
+            </button>
+          </div>
         </div>
       </div>
     </div>

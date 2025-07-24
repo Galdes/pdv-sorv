@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Minus, X, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Minus, X, Trash2, Search } from 'lucide-react';
 
 interface ItemCarrinho {
   produto: {
@@ -107,13 +107,22 @@ export default function CarrinhoDelivery() {
                 <p className="text-gray-600">{totalItens} itens selecionados</p>
               </div>
             </div>
-            <button
-              onClick={limparCarrinho}
-              className="text-red-600 hover:text-red-700 flex items-center gap-2 text-sm"
-            >
-              <Trash2 size={16} />
-              Limpar Carrinho
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push('/delivery/rastrear')}
+                className="flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+              >
+                <Search size={16} />
+                Rastrear
+              </button>
+              <button
+                onClick={limparCarrinho}
+                className="text-red-600 hover:text-red-700 flex items-center gap-2 text-sm"
+              >
+                <Trash2 size={16} />
+                Limpar Carrinho
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -220,6 +220,13 @@ function SucessoDeliveryContent() {
             </button>
             
             <button
+              onClick={() => router.push('/delivery/rastrear')}
+              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium"
+            >
+              Rastrear Outros Pedidos
+            </button>
+            
+            <button
               onClick={voltarAoCardapio}
               className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors font-medium"
             >

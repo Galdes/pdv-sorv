@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabaseClient';
 import { Produto, Sabor } from '../../../lib/types';
-import { ShoppingCart, Plus, Minus, X, Check } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, X, Check, Search } from 'lucide-react';
 
 interface ItemCarrinho {
   produto: Produto;
@@ -22,6 +23,7 @@ export default function CardapioDelivery() {
   const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null);
   const [saboresEscolhidos, setSaboresEscolhidos] = useState<string[]>([]);
   const [quantidadeModal, setQuantidadeModal] = useState(1);
+  const router = useRouter();
 
   useEffect(() => {
     carregarDados();
@@ -213,9 +215,18 @@ export default function CardapioDelivery() {
               <h1 className="text-3xl font-bold text-gray-800">🍦 Sorveteria Conteiner</h1>
               <p className="text-gray-600">Delivery & Retirada</p>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Pedido via</p>
-              <p className="text-lg font-semibold text-blue-600">Cardápio Digital</p>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push('/delivery/rastrear')}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+              >
+                <Search size={16} />
+                Rastrear Pedido
+              </button>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Pedido via</p>
+                <p className="text-lg font-semibold text-blue-600">Cardápio Digital</p>
+              </div>
             </div>
           </div>
         </div>
