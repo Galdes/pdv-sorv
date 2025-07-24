@@ -72,8 +72,6 @@ export default function AdminProdutosPage() {
       
       if (errProdutos) throw errProdutos;
       
-      console.log('Resposta bruta do Supabase (produtos):', produtos);
-      
       // Adicionar categoria_nome aos produtos
       const produtosComCategoria = produtos?.map(produto => ({
         ...produto,
@@ -81,20 +79,6 @@ export default function AdminProdutosPage() {
       })) || [];
       
       setProdutos(produtosComCategoria);
-      console.log('Produtos carregados (tabela direta):', produtosComCategoria);
-      
-      // Verificar produto específico
-      const produto12Bolas = produtosComCategoria.find(p => p.nome === '12 bolas');
-      if (produto12Bolas) {
-        console.log('Produto 12 bolas encontrado:', produto12Bolas);
-        console.log('max_sabores do produto 12 bolas:', produto12Bolas.max_sabores);
-        console.log('Tipo do max_sabores:', typeof produto12Bolas.max_sabores);
-        console.log('Produto completo (JSON):', JSON.stringify(produto12Bolas, null, 2));
-        
-        // Verificar se há outros produtos com mesmo nome
-        const todosProdutos12Bolas = produtosComCategoria.filter(p => p.nome === '12 bolas');
-        console.log('Todos os produtos com nome "12 bolas":', todosProdutos12Bolas);
-      }
 
       // Buscar categorias
       const { data: categorias, error: errCategorias } = await supabase
@@ -142,45 +126,29 @@ export default function AdminProdutosPage() {
         bar_id: adminUser.bar_id
       };
 
-      console.log('Dados do produto a serem salvos:', produtoData);
-      console.log('max_sabores:', produtoData.max_sabores, 'tipo:', typeof produtoData.max_sabores);
-
       let produtoId: string;
 
       if (editingProduto) {
         // Atualizar produto
-        console.log('Atualizando produto:', editingProduto.id);
         const { data, error: errUpdate } = await supabase
           .from('produtos')
           .update(produtoData)
           .eq('id', editingProduto.id)
-          .select(); // Adicionar .select() para ver a resposta
-        
-        console.log('Resposta do Supabase (update):', { data, error: errUpdate });
+          .select();
         
         if (errUpdate) {
-          console.error('Erro ao atualizar:', errUpdate);
           throw errUpdate;
         }
-        
-        // Verificar se os dados foram realmente atualizados
-        console.log('=== VERIFICAÇÃO DO UPDATE ===');
-        console.log('Dados enviados para update:', produtoData);
-        console.log('Dados retornados do update:', data);
-        console.log('max_sabores enviado:', produtoData.max_sabores);
-        console.log('max_sabores retornado:', data?.[0]?.max_sabores);
         
         produtoId = editingProduto.id;
       } else {
         // Criar novo produto
-        console.log('Criando novo produto');
         const { data: newProduto, error: errInsert } = await supabase
           .from('produtos')
           .insert(produtoData)
           .select('id')
           .single();
         if (errInsert) {
-          console.error('Erro ao inserir:', errInsert);
           throw errInsert;
         }
         produtoId = newProduto.id;
@@ -198,9 +166,6 @@ export default function AdminProdutosPage() {
 
       // Forçar atualização imediata do estado
       if (editingProduto) {
-        console.log('Atualizando estado local para produto:', editingProduto.id);
-        console.log('Novos dados:', produtoData);
-        
         // Atualizar o produto na lista local
         setProdutos(prevProdutos => {
           const novosProdutos = prevProdutos.map(produto => 
@@ -218,22 +183,14 @@ export default function AdminProdutosPage() {
               : produto
           );
           
-          console.log('Estado atualizado:', novosProdutos.find(p => p.id === editingProduto.id));
           return novosProdutos;
         });
       }
 
       // Recarregar dados para garantir sincronização
-      // await fetchData(); // COMENTADO TEMPORARIAMENTE
-      
-      // Recarregar dados após um pequeno delay para garantir sincronização
       setTimeout(async () => {
-        console.log('=== RECARREGANDO DADOS APÓS UPDATE ===');
         await fetchData();
       }, 500);
-      
-      console.log('=== UPDATE BEM-SUCEDIDO ===');
-      console.log('Fechando formulário após sucesso...');
       
       // Fechar formulário apenas após sucesso
       setShowForm(false);
@@ -250,12 +207,6 @@ export default function AdminProdutosPage() {
 
   const handleEdit = async (produto: Produto) => {
     try {
-      console.log('=== INÍCIO handleEdit ===');
-      console.log('Editando produto:', produto);
-      console.log('max_sabores do produto:', produto.max_sabores);
-      console.log('Tipo do max_sabores:', typeof produto.max_sabores);
-      console.log('Produto completo (JSON):', JSON.stringify(produto, null, 2));
-      
       // Buscar sabores do produto
       const { data: saboresProduto, error: errSabores } = await supabase
         .rpc('buscar_sabores_do_produto', {
@@ -277,19 +228,10 @@ export default function AdminProdutosPage() {
         ativo: produto.ativo
       };
 
-      console.log('Form data preparado:', formData);
-      console.log('max_sabores no form data:', formData.max_sabores);
-      console.log('Tipo do max_sabores no form data:', typeof formData.max_sabores);
-
       setEditingProduto(produto);
       setForm(formData);
       
-      console.log('Form carregado com max_sabores:', produto.max_sabores || 1);
-      console.log('=== FIM handleEdit ===');
-      
-      console.log('Abrindo modal...');
       setShowForm(true);
-      console.log('Modal aberto, showForm deve ser true');
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar sabores do produto');
     }
@@ -330,20 +272,9 @@ export default function AdminProdutosPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    console.log('handleChange:', { name, value, type });
-    
-    // Log específico para max_sabores
-    if (name === 'max_sabores') {
-      console.log('=== ALTERAÇÃO MAX_SABORES ===');
-      console.log('Valor anterior:', form.max_sabores);
-      console.log('Novo valor:', value);
-      console.log('Tipo do novo valor:', typeof value);
-    }
-    
     // Tratar campos numéricos
     if (type === 'number') {
       const numValue = value === '' ? 0 : parseFloat(value);
-      console.log('Campo numérico:', { name, numValue });
       setForm({
         ...form,
         [name]: numValue
@@ -359,8 +290,6 @@ export default function AdminProdutosPage() {
         [name]: value
       });
     }
-    
-    console.log('Form atualizado:', form);
   };
 
   const handleSaboresChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -458,11 +387,7 @@ export default function AdminProdutosPage() {
                   <AdminTableCell>
                     <div className="flex space-x-2">
                       <AdminButton
-                        onClick={() => {
-                          console.log('=== CLICOU EM EDITAR ===');
-                          console.log('Produto clicado:', produto);
-                          handleEdit(produto);
-                        }}
+                        onClick={() => handleEdit(produto)}
                         variant="secondary"
                         size="sm"
                       >
@@ -633,8 +558,6 @@ export default function AdminProdutosPage() {
                   type="button"
                   variant="secondary"
                   onClick={() => {
-                    console.log('=== BOTÃO CANCELAR CLICADO ===');
-                    console.log('Isso NÃO deveria acontecer automaticamente!');
                     setShowForm(false);
                     setEditingProduto(null);
                     resetForm();

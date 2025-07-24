@@ -15,11 +15,39 @@ import AdminLayout, {
 } from '../../../components/AdminLayout';
 
 interface PedidoCozinha extends Pedido {
-  produtos: Produto;
-  comandas: {
+  produtos?: Produto;
+  comandas?: {
     clientes: Cliente;
     mesas: Mesa;
   };
+  // Para pedidos de delivery
+  pedidos_externos?: {
+    tipo_servico: string;
+    enderecos_entrega: Array<{
+      nome_destinatario: string;
+      telefone: string;
+      endereco: string;
+    }>;
+  };
+  // Para itens de pedidos externos
+  itens_pedido_externo?: {
+    quantidade: number;
+    produtos: Array<{
+      nome: string;
+      preco: number;
+    }>;
+  };
+  // Propriedades adicionais para unificação
+  tipo: 'comanda' | 'delivery';
+  tipo_servico?: string;
+  valor_total?: number;
+  itens?: Array<{
+    quantidade: number;
+    produtos: {
+      nome: string;
+      preco: number;
+    };
+  }>;
 }
 
 export default function CozinhaPage() {
@@ -60,13 +88,8 @@ export default function CozinhaPage() {
       
       if (errMesas) throw errMesas;
       
-      if (!mesas || mesas.length === 0) {
-        setPedidos([]);
-        return;
-      }
+      const mesaIds = mesas?.map(m => m.id) || [];
 
-      const mesaIds = mesas.map(m => m.id);
-      
       // 2. Buscar comandas das mesas do bar
       const { data: comandas, error: errComandas } = await supabase
         .from('comandas')
@@ -75,46 +98,89 @@ export default function CozinhaPage() {
       
       if (errComandas) throw errComandas;
       
-      if (!comandas || comandas.length === 0) {
-        setPedidos([]);
-        return;
+      const comandaIds = comandas?.map((c: any) => c.id) || [];
+
+      // 3. Buscar pedidos de comandas (apenas pendentes e preparando)
+      let pedidosComandas: any[] = [];
+      if (comandaIds.length > 0) {
+        let queryComandas = supabase
+          .from('pedidos')
+          .select(`
+            *,
+            produtos:produto_id(*),
+            comandas:comanda_id(
+              clientes:cliente_id(*),
+              mesas:mesa_id(*)
+            )
+          `)
+          .in('comanda_id', comandaIds)
+          .in('status', ['pendente', 'preparando'])
+          .order('created_at', { ascending: true });
+
+        if (filtroStatus !== 'todos') {
+          queryComandas = queryComandas.eq('status', filtroStatus);
+        }
+
+        const { data: pedidosCom, error: errPedidosCom } = await queryComandas;
+        if (errPedidosCom) throw errPedidosCom;
+        
+        pedidosComandas = (pedidosCom || []).map((pedido: any) => ({
+          ...pedido,
+          tipo: 'comanda',
+          comandas: {
+            clientes: pedido.comandas?.clientes,
+            mesas: pedido.comandas?.mesas
+          }
+        }));
       }
 
-      const comandaIds = comandas.map((c: any) => c.id);
-      
-      // Buscar pedidos para cozinha (pendentes e preparando)
-      let query = supabase
-        .from('pedidos')
+      // 4. Buscar pedidos de delivery (apenas pendentes e preparando)
+      let queryDelivery = supabase
+        .from('pedidos_externos')
         .select(`
           *,
-          produtos:produto_id(*),
-          comandas:comanda_id(
-            clientes:cliente_id(*),
-            mesas:mesa_id(*)
+          enderecos_entrega(*),
+          itens_pedido_externo(
+            quantidade,
+            produtos(*)
           )
         `)
-        .in('comanda_id', comandaIds)
+        .eq('bar_id', adminUser.bar_id)
         .in('status', ['pendente', 'preparando'])
-        .order('created_at', { ascending: true }); // Mais antigos primeiro
+        .order('created_at', { ascending: true });
 
-      // Aplicar filtro de status
       if (filtroStatus !== 'todos') {
-        query = query.eq('status', filtroStatus);
+        queryDelivery = queryDelivery.eq('status', filtroStatus);
       }
 
-      const { data: pedidos, error: errPedidos } = await query;
-      if (errPedidos) throw errPedidos;
-      
-      // Transformar os dados para o formato esperado
-      const pedidosFormatados = (pedidos || []).map((pedido: any) => ({
-        ...pedido,
-        comandas: {
-          clientes: pedido.comandas?.clientes,
-          mesas: pedido.comandas?.mesas
-        }
+      const { data: pedidosDelivery, error: errPedidosDelivery } = await queryDelivery;
+      if (errPedidosDelivery) throw errPedidosDelivery;
+
+      // Transformar pedidos de delivery em formato compatível
+      const pedidosDeliveryFormatados = (pedidosDelivery || []).map((pedido: any) => ({
+        id: pedido.id,
+        status: pedido.status,
+        created_at: pedido.created_at,
+        tipo: 'delivery',
+        tipo_servico: pedido.tipo_servico,
+        pedidos_externos: {
+          tipo_servico: pedido.tipo_servico,
+          enderecos_entrega: pedido.enderecos_entrega
+        },
+        // Para cada item do pedido, criar um "pedido" separado
+        itens: pedido.itens_pedido_externo?.map((item: any) => ({
+          quantidade: item.quantidade,
+          produtos: item.produtos
+        })) || []
       }));
-      
-      setPedidos(pedidosFormatados);
+
+      // Combinar e ordenar todos os pedidos
+      const todosPedidos = [
+        ...pedidosComandas,
+        ...pedidosDeliveryFormatados
+      ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+      setPedidos(todosPedidos);
     } catch (err: any) {
       setError(err.message || 'Erro ao buscar pedidos');
     } finally {
@@ -122,15 +188,26 @@ export default function CozinhaPage() {
     }
   };
 
-  const handleStatusChange = async (pedidoId: string, novoStatus: string) => {
+  const handleStatusChange = async (pedidoId: string, novoStatus: string, tipo: string) => {
     setLoading(true);
     try {
-      const { error: errUpdate } = await supabase
-        .from('pedidos')
-        .update({ status: novoStatus })
-        .eq('id', pedidoId);
-      
-      if (errUpdate) throw errUpdate;
+      if (tipo === 'comanda') {
+        // Atualizar pedido de comanda
+        const { error: errUpdate } = await supabase
+          .from('pedidos')
+          .update({ status: novoStatus })
+          .eq('id', pedidoId);
+        
+        if (errUpdate) throw errUpdate;
+      } else {
+        // Atualizar pedido de delivery
+        const { error: errUpdate } = await supabase
+          .from('pedidos_externos')
+          .update({ status: novoStatus })
+          .eq('id', pedidoId);
+        
+        if (errUpdate) throw errUpdate;
+      }
       
       // Atualizar lista local
       setPedidos(prev => prev.map(pedido => 
@@ -161,6 +238,21 @@ export default function CozinhaPage() {
     }
   };
 
+  const getTipoPedidoColor = (tipo: string) => {
+    switch (tipo) {
+      case 'delivery': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'comanda': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getTipoPedidoText = (tipo: string, tipoServico?: string) => {
+    if (tipo === 'delivery') {
+      return tipoServico === 'entrega' ? '🚚 DELIVERY' : '📦 RETIRADA';
+    }
+    return '🍽️ COMANDA';
+  };
+
   const formatarTempo = (data: string) => {
     const agora = new Date();
     const dataPedido = new Date(data);
@@ -189,6 +281,14 @@ export default function CozinhaPage() {
     return pedidos.filter(p => p.status === 'preparando').length;
   };
 
+  const calcularTotalDelivery = () => {
+    return pedidos.filter(p => p.tipo === 'delivery').length;
+  };
+
+  const calcularTotalComandas = () => {
+    return pedidos.filter(p => p.tipo === 'comanda').length;
+  };
+
   if (!adminUser) {
     return <div className="text-center p-4">Carregando...</div>;
   }
@@ -199,26 +299,33 @@ export default function CozinhaPage() {
       subtitle="Pedidos para preparação"
       onBack={() => router.push('/admin/dashboard')}
     >
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      {/* Estatísticas Simplificadas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <AdminCard>
           <div className="text-center">
             <div className="text-3xl font-bold text-red-600">{calcularTotalPendentes()}</div>
-            <div className="text-sm text-gray-600">Pedidos Novos</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Novos</div>
           </div>
         </AdminCard>
         
         <AdminCard>
           <div className="text-center">
             <div className="text-3xl font-bold text-yellow-600">{calcularTotalPreparando()}</div>
-            <div className="text-sm text-gray-600">Em Preparação</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Preparando</div>
           </div>
         </AdminCard>
         
         <AdminCard>
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">{pedidos.length}</div>
-            <div className="text-sm text-gray-600">Total na Cozinha</div>
+            <div className="text-3xl font-bold text-blue-600">{calcularTotalDelivery()}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Delivery</div>
+          </div>
+        </AdminCard>
+
+        <AdminCard>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-green-600">{calcularTotalComandas()}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Comandas</div>
           </div>
         </AdminCard>
       </div>
@@ -231,7 +338,7 @@ export default function CozinhaPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
               filtroStatus === 'todos'
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
             }`}
             title="Ver todos os pedidos da cozinha"
           >
@@ -243,7 +350,7 @@ export default function CozinhaPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
               filtroStatus === 'pendente'
                 ? 'bg-red-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
             }`}
             title="Ver apenas pedidos novos"
           >
@@ -255,7 +362,7 @@ export default function CozinhaPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
               filtroStatus === 'preparando'
                 ? 'bg-yellow-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
             }`}
             title="Ver apenas pedidos em preparação"
           >
@@ -263,17 +370,17 @@ export default function CozinhaPage() {
           </button>
         </div>
         
-        <div className="mt-4 text-sm text-gray-600">
-          <p>🔄 Atualização automática a cada 30 segundos</p>
+        <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">
+          <p>�� Atualização automática a cada 30 segundos</p>
         </div>
       </AdminCard>
 
-      {/* Lista de Pedidos */}
+      {/* Lista de Pedidos Simplificada */}
       <AdminCard title={`Pedidos da Cozinha (${pedidos.length})`}>
         {loading ? (
           <div className="text-center">Carregando pedidos...</div>
         ) : pedidos.length === 0 ? (
-          <div className="text-center text-gray-600">
+          <div className="text-center text-gray-600 dark:text-gray-300">
             {filtroStatus === 'todos' 
               ? 'Nenhum pedido na cozinha no momento' 
               : `Nenhum pedido ${filtroStatus === 'pendente' ? 'novo' : 'em preparação'} no momento`
@@ -282,10 +389,10 @@ export default function CozinhaPage() {
         ) : (
           <AdminTable>
             <AdminTableHeader>
+              <AdminTableHeaderCell>Tipo</AdminTableHeaderCell>
               <AdminTableHeaderCell>Status</AdminTableHeaderCell>
-              <AdminTableHeaderCell>Pedido</AdminTableHeaderCell>
-              <AdminTableHeaderCell>Mesa</AdminTableHeaderCell>
-              <AdminTableHeaderCell>Cliente</AdminTableHeaderCell>
+              <AdminTableHeaderCell>Produto</AdminTableHeaderCell>
+              <AdminTableHeaderCell>Destino</AdminTableHeaderCell>
               <AdminTableHeaderCell>Tempo</AdminTableHeaderCell>
               <AdminTableHeaderCell>Ações</AdminTableHeaderCell>
             </AdminTableHeader>
@@ -293,51 +400,78 @@ export default function CozinhaPage() {
               {pedidos.map((pedido) => (
                 <tr key={pedido.id} className="border-b border-gray-200">
                   <AdminTableCell>
+                    <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full border-2 ${getTipoPedidoColor(pedido.tipo)}`}>
+                      {getTipoPedidoText(pedido.tipo, pedido.tipo_servico)}
+                    </span>
+                  </AdminTableCell>
+                  <AdminTableCell>
                     <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full border-2 ${getStatusColor(pedido.status)}`}>
                       {getStatusText(pedido.status)}
                     </span>
                   </AdminTableCell>
                   <AdminTableCell>
                     <div className="space-y-1">
-                      <div className="text-lg font-bold text-gray-900">
-                        {pedido.produtos?.nome}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        Qtd: {pedido.quantidade} x R$ {pedido.preco_unitario?.toFixed(2)}
-                      </div>
-                      {pedido.observacoes && (
-                        <div className="text-sm bg-yellow-50 p-2 rounded border-l-4 border-yellow-400">
-                          <span className="font-semibold">📝 Observações:</span> {pedido.observacoes}
-                        </div>
+                      {pedido.tipo === 'comanda' ? (
+                        <>
+                          <div className="text-lg font-bold text-gray-900 dark:text-white">
+                            {pedido.produtos?.nome}
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-300">
+                            Qtd: {pedido.quantidade}
+                          </div>
+                          {pedido.observacoes && (
+                            <div className="text-sm bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border-l-4 border-yellow-400 dark:border-yellow-500">
+                              <span className="font-semibold text-yellow-800 dark:text-yellow-200">📝</span> <span className="text-yellow-700 dark:text-yellow-200">{pedido.observacoes}</span>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-lg font-bold text-gray-900 dark:text-white">
+                            Pedido #{pedido.id.slice(-8)}
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-300">
+                            {pedido.itens?.map((item: any, index: number) => (
+                              <div key={index}>
+                                {item.quantidade}x {item.produtos?.nome}
+                              </div>
+                            ))}
+                          </div>
+                        </>
                       )}
                     </div>
                   </AdminTableCell>
                   <AdminTableCell>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">
-                        Mesa {pedido.comandas?.mesas?.numero}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {pedido.comandas?.mesas?.descricao || 'Mesa padrão'}
-                      </div>
-                    </div>
-                  </AdminTableCell>
-                  <AdminTableCell>
-                    <div className="space-y-1">
-                      <div className="font-semibold text-gray-900">
-                        {pedido.comandas?.clientes?.nome || 'Sem nome'}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        📱 {pedido.comandas?.clientes?.telefone}
-                      </div>
+                      {pedido.tipo === 'comanda' ? (
+                        <>
+                          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                            Mesa {pedido.comandas?.mesas?.numero}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {pedido.comandas?.mesas?.descricao || 'Mesa padrão'}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                            {pedido.tipo_servico === 'entrega' ? '🚚 Entrega' : '📦 Retirada'}
+                          </div>
+                          {pedido.tipo_servico === 'entrega' && pedido.pedidos_externos?.enderecos_entrega?.[0] && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {pedido.pedidos_externos.enderecos_entrega[0].endereco}
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   </AdminTableCell>
                   <AdminTableCell>
                     <div className="text-center">
-                      <div className="text-sm font-semibold text-gray-900">
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white">
                         {formatarHora(pedido.created_at)}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {formatarTempo(pedido.created_at)}
                       </div>
                     </div>
@@ -348,11 +482,11 @@ export default function CozinhaPage() {
                         <AdminButton
                           variant="warning"
                           size="sm"
-                          onClick={() => handleStatusChange(pedido.id, 'preparando')}
+                          onClick={() => handleStatusChange(pedido.id, 'preparando', pedido.tipo)}
                           title="Iniciar preparação deste pedido"
                           className="w-full"
                         >
-                          🍳 Iniciar Preparação
+                          🍳 Iniciar
                         </AdminButton>
                       )}
                       
@@ -360,11 +494,11 @@ export default function CozinhaPage() {
                         <AdminButton
                           variant="success"
                           size="sm"
-                          onClick={() => handleStatusChange(pedido.id, 'entregue')}
+                          onClick={() => handleStatusChange(pedido.id, 'entregue', pedido.tipo)}
                           title="Marcar como entregue"
                           className="w-full"
                         >
-                          ✅ Pronto para Entrega
+                          ✅ Pronto
                         </AdminButton>
                       )}
                     </div>

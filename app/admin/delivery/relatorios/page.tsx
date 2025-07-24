@@ -117,7 +117,7 @@ export default function RelatoriosDeliveryPage() {
 
       if (error) throw error;
 
-      console.log('Pedidos carregados:', pedidosData);
+
       setPedidos(pedidosData || []);
 
       // Calcular estatísticas
