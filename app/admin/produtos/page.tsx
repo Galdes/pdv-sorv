@@ -37,24 +37,7 @@ export default function AdminProdutosPage() {
     ativo: true
   });
 
-  // Log para verificar re-renderização
-  console.log('=== RENDERIZAÇÃO DO COMPONENTE ===');
-  console.log('form.max_sabores:', form.max_sabores);
-  console.log('showForm:', showForm);
-  console.log('editingProduto:', editingProduto?.nome);
-  console.log('editingProduto ID:', editingProduto?.id);
-  
-  // Log para verificar produto na lista
-  if (editingProduto) {
-    const produtoNaLista = produtos.find(p => p.id === editingProduto.id);
-    console.log('Produto na lista:', produtoNaLista?.nome, 'max_sabores:', produtoNaLista?.max_sabores, 'ID:', produtoNaLista?.id);
-    
-    // Verificar se há produtos duplicados
-    const produtosComMesmoNome = produtos.filter(p => p.nome === editingProduto.nome);
-    if (produtosComMesmoNome.length > 1) {
-      console.log('⚠️ PRODUTOS DUPLICADOS ENCONTRADOS:', produtosComMesmoNome);
-    }
-  }
+
 
   useEffect(() => {
     const userData = localStorage.getItem('adminUser');
@@ -70,13 +53,7 @@ export default function AdminProdutosPage() {
     fetchData();
   }, [adminUser]);
 
-  // Log quando modal abre/fecha
-  useEffect(() => {
-    console.log('Modal status mudou:', showForm ? 'ABERTO' : 'FECHADO');
-    if (showForm && editingProduto) {
-      console.log('Modal aberto para produto:', editingProduto.nome, 'ID:', editingProduto.id);
-    }
-  }, [showForm, editingProduto]);
+
 
   const fetchData = async () => {
     setLoading(true);
@@ -614,6 +591,21 @@ export default function AdminProdutosPage() {
                 onChange={handleChange}
                 placeholder="https://exemplo.com/imagem.jpg"
               />
+              
+              {/* Instruções para Google Drive */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-blue-800 mb-2">📸 Como adicionar imagem do Google Drive:</h4>
+                <ol className="text-xs text-blue-700 space-y-1 list-decimal list-inside">
+                  <li>Faça upload da imagem no Google Drive</li>
+                  <li>Clique com botão direito na imagem → "Compartilhar"</li>
+                  <li>Copie o link de compartilhamento</li>
+                  <li>Cole o link no campo acima</li>
+                  <li>O sistema converte automaticamente para exibição</li>
+                </ol>
+                <p className="text-xs text-blue-600 mt-2">
+                  <strong>Exemplo:</strong> https://drive.google.com/file/d/1ABC123.../view?usp=sharing
+                </p>
+              </div>
               
               <div className="flex items-center">
                 <input

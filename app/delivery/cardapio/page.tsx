@@ -83,12 +83,6 @@ export default function CardapioDelivery() {
         });
 
         setProdutos(produtosComSabores);
-        console.log('Produtos carregados:', produtosComSabores);
-        console.log('Sabores carregados:', saboresData);
-        
-        // Verificar produtos com max_sabores
-        const produtosComMaxSabores = produtosComSabores.filter(p => p.max_sabores && p.max_sabores > 1);
-        console.log('Produtos com max_sabores > 1:', produtosComMaxSabores);
       }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -102,18 +96,12 @@ export default function CardapioDelivery() {
     : produtos.filter(produto => produto.categoria_id === categoriaAtiva);
 
   const adicionarAoCarrinho = (produto: Produto) => {
-    console.log('Clicou em adicionar produto:', produto);
-    console.log('Produto tem max_sabores:', produto.max_sabores);
-    console.log('Produto tem sabores:', produto.sabores);
-    
     if (produto.max_sabores && produto.max_sabores > 0) {
-      console.log('Abrindo modal de sabores...');
       setProdutoSelecionado(produto);
       setSaboresEscolhidos([]);
       setQuantidadeModal(1);
       setShowSaboresModal(true);
     } else {
-      console.log('Adicionando produto sem sabores...');
       adicionarProdutoAoCarrinho(produto, 1, []);
     }
   };
@@ -194,6 +182,21 @@ export default function CardapioDelivery() {
 
   const totalItens = carrinho.reduce((total, item) => total + item.quantidade, 0);
 
+  // Função para converter URL do Google Drive automaticamente
+  const processarUrlImagem = (url: string): string => {
+    if (!url) return '';
+    
+    // Detectar se é URL do Google Drive
+    const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+    if (driveMatch) {
+      const fileId = driveMatch[1];
+      // Converter para formato de thumbnail do Google Drive
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+    }
+    
+    return url;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -206,188 +209,186 @@ export default function CardapioDelivery() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <div className="bg-white shadow-lg">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Fixo */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">🍦 Sorveteria Conteiner</h1>
-              <p className="text-gray-600">Delivery & Retirada</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white text-xl">🍦</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Sorveteria Conteiner</h1>
+                <p className="text-sm text-gray-500">Delivery & Retirada</p>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
+            
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => router.push('/delivery/rastrear')}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors text-sm"
               >
                 <Search size={16} />
-                Rastrear Pedido
+                Rastrear
               </button>
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Pedido via</p>
-                <p className="text-lg font-semibold text-blue-600">Cardápio Digital</p>
-              </div>
+              
+              {/* Carrinho Flutuante - Versão Compacta */}
+              <button
+                onClick={() => window.location.href = '/delivery/carrinho'}
+                className="relative bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 transition-colors"
+              >
+                <ShoppingCart size={20} />
+                {totalItens > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {totalItens}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Categorias e Produtos */}
-          <div className="lg:col-span-2">
-            {/* Categorias */}
-            <div className="mb-6">
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setCategoriaAtiva('todos')}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    categoriaAtiva === 'todos'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Todos
-                </button>
-                {categorias.map(categoria => (
-                  <button
-                    key={categoria.id}
-                    onClick={() => setCategoriaAtiva(categoria.id)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      categoriaAtiva === categoria.id
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {categoria.nome}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Produtos */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {produtosFiltrados.map(produto => (
-                <div
-                  key={produto.id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <div className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-semibold text-gray-800 text-lg">{produto.nome}</h3>
-                      <span className="text-lg font-bold text-blue-600">
-                        R$ {produto.preco.toFixed(2).replace('.', ',')}
-                      </span>
-                    </div>
-                    
-                    {produto.descricao && (
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                        {produto.descricao}
-                      </p>
-                    )}
-
-                    {produto.max_sabores && produto.max_sabores > 1 && (
-                      <p className="text-xs text-blue-600 mb-3">
-                        Escolha até {produto.max_sabores} sabores
-                      </p>
-                    )}
-
-                    <button
-                      onClick={() => adicionarAoCarrinho(produto)}
-                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Plus size={16} />
-                      Adicionar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* Categorias em Abas */}
+      <div className="bg-white border-b">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex gap-1 overflow-x-auto py-2">
+            <button
+              onClick={() => setCategoriaAtiva('todos')}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                categoriaAtiva === 'todos'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              Todos
+            </button>
+            {categorias.map(categoria => (
+              <button
+                key={categoria.id}
+                onClick={() => setCategoriaAtiva(categoria.id)}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  categoriaAtiva === categoria.id
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                {categoria.nome}
+              </button>
+            ))}
           </div>
+        </div>
+      </div>
 
-          {/* Carrinho */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6 sticky top-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-800">Seu Pedido</h2>
-                <div className="flex items-center gap-2">
-                  <ShoppingCart size={20} className="text-blue-600" />
-                  <span className="text-sm text-gray-600">{totalItens} itens</span>
-                </div>
-              </div>
-
-              {carrinho.length === 0 ? (
-                <div className="text-center py-8">
-                  <ShoppingCart size={48} className="text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">Seu carrinho está vazio</p>
-                  <p className="text-sm text-gray-400">Adicione produtos para continuar</p>
+      {/* Conteúdo Principal */}
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* Grid de Produtos */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {produtosFiltrados.map(produto => (
+            <div
+              key={produto.id}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 group"
+            >
+                             {/* Imagem do Produto */}
+               {produto.imagem_url ? (
+                 <div className="h-48 bg-gray-100 overflow-hidden">
+                   <img
+                     src={processarUrlImagem(produto.imagem_url)}
+                     alt={produto.nome}
+                     className="w-full h-full object-cover"
+                                         onError={(e) => {
+                       // Fallback para placeholder se a imagem falhar
+                       const target = e.target as HTMLImageElement;
+                       target.style.display = 'none';
+                       target.nextElementSibling?.classList.remove('hidden');
+                     }}
+                  />
+                  {/* Placeholder de fallback */}
+                  <div className="h-48 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center hidden">
+                    <span className="text-4xl">🍦</span>
+                  </div>
                 </div>
               ) : (
-                <>
-                  <div className="space-y-3 mb-4 max-h-96 overflow-y-auto">
-                    {carrinho.map((item, index) => (
-                      <div key={index} className="border-b border-gray-100 pb-3">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h4 className="font-medium text-gray-800">{item.produto.nome}</h4>
-                            {item.observacoes && (
-                              <p className="text-xs text-gray-500 mt-1">{item.observacoes}</p>
-                            )}
-                            <div className="flex items-center gap-2 mt-2">
-                              <button
-                                onClick={() => atualizarQuantidade(index, item.quantidade - 1)}
-                                className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-                              >
-                                <Minus size={12} />
-                              </button>
-                              <span className="text-sm font-medium">{item.quantidade}</span>
-                              <button
-                                onClick={() => atualizarQuantidade(index, item.quantidade + 1)}
-                                className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-                              >
-                                <Plus size={12} />
-                              </button>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium text-gray-800">
-                              R$ {(item.produto.preco * item.quantidade).toFixed(2).replace('.', ',')}
-                            </p>
-                            <button
-                              onClick={() => removerDoCarrinho(index)}
-                              className="text-red-500 hover:text-red-700 mt-1"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="border-t border-gray-200 pt-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-lg font-semibold text-gray-800">Total</span>
-                      <span className="text-2xl font-bold text-blue-600">
-                        R$ {totalCarrinho.toFixed(2).replace('.', ',')}
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={() => window.location.href = '/delivery/carrinho'}
-                      className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium"
-                    >
-                      Continuar para Checkout
-                    </button>
-                  </div>
-                </>
+                <div className="h-48 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                  <span className="text-4xl">🍦</span>
+                </div>
               )}
+              
+              <div className="p-4">
+                {/* Nome e Preço */}
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-semibold text-gray-900 text-lg leading-tight">{produto.nome}</h3>
+                  <span className="text-lg font-bold text-blue-600">
+                    R$ {produto.preco.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+                
+                {/* Descrição */}
+                {produto.descricao && (
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                    {produto.descricao}
+                  </p>
+                )}
+
+                {/* Indicador de Sabores */}
+                {produto.max_sabores && produto.max_sabores > 1 && (
+                  <div className="mb-3">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Escolha até {produto.max_sabores} sabores
+                    </span>
+                  </div>
+                )}
+
+                {/* Botão Adicionar */}
+                <button
+                  onClick={() => adicionarAoCarrinho(produto)}
+                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2 group-hover:scale-105 transform duration-200"
+                >
+                  <Plus size={16} />
+                  Adicionar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Estado Vazio */}
+        {produtosFiltrados.length === 0 && !loading && (
+          <div className="text-center py-12">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">🍦</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum produto encontrado</h3>
+            <p className="text-gray-600">Tente selecionar outra categoria</p>
+          </div>
+        )}
+      </div>
+
+      {/* Carrinho Flutuante - Versão Expandida (Mobile) */}
+      {carrinho.length > 0 && (
+        <div className="fixed bottom-4 left-4 right-4 lg:hidden z-50">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <ShoppingCart size={20} className="text-blue-600" />
+                <div>
+                  <p className="font-medium text-gray-900">{totalItens} itens</p>
+                  <p className="text-sm text-gray-500">R$ {totalCarrinho.toFixed(2).replace('.', ',')}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => window.location.href = '/delivery/carrinho'}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Ver Carrinho
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Modal de Sabores - Otimizado para Mobile */}
+      {/* Modal de Sabores - Mantido como está */}
       {showSaboresModal && produtoSelecionado && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
