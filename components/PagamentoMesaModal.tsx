@@ -86,13 +86,25 @@ export default function PagamentoMesaModal({
   };
 
   const calcularValorTotal = () => {
-    return pedidos.reduce((total, pedido) => total + (pedido.valor_restante || pedido.subtotal), 0);
+    const total = pedidos.reduce((total, pedido) => {
+      const valorPedido = pedido.valor_restante || pedido.subtotal || 0;
+      return total + valorPedido;
+    }, 0);
+    
+    // Garantir que o valor seja um número válido
+    return isNaN(total) ? 0 : total;
   };
 
   const calcularValorSelecionados = () => {
-    return pedidos
+    const total = pedidos
       .filter(pedido => pedidosSelecionados.includes(pedido.id))
-      .reduce((total, pedido) => total + (pedido.valor_restante || pedido.subtotal), 0);
+      .reduce((total, pedido) => {
+        const valorPedido = pedido.valor_restante || pedido.subtotal || 0;
+        return total + valorPedido;
+      }, 0);
+    
+    // Garantir que o valor seja um número válido
+    return isNaN(total) ? 0 : total;
   };
 
   const handlePagamentoParcial = async () => {
@@ -123,6 +135,8 @@ export default function PagamentoMesaModal({
       if (error) throw error;
       
       alert(`Pagamento parcial de R$ ${valor.toFixed(2)} realizado com sucesso!`);
+      // Recarregar os dados da mesa após o pagamento
+      await fetchPedidosMesa();
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -153,6 +167,8 @@ export default function PagamentoMesaModal({
       
       const valor = calcularValorSelecionados();
       alert(`Pagamento de R$ ${valor.toFixed(2)} realizado com sucesso!`);
+      // Recarregar os dados da mesa após o pagamento
+      await fetchPedidosMesa();
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -167,6 +183,20 @@ export default function PagamentoMesaModal({
     setError(null);
 
     try {
+      // Validar se há pedidos
+      if (!pedidos || pedidos.length === 0) {
+        setError('Não há pedidos na mesa para pagar.');
+        return;
+      }
+
+      const valorTotalMesa = calcularValorTotal();
+      
+      // Validar se há valor total válido
+      if (!valorTotalMesa || valorTotalMesa <= 0) {
+        setError('Valor total da mesa inválido. Verifique se há pedidos válidos.');
+        return;
+      }
+
       const { data, error } = await supabase.rpc('processar_pagamento_total', {
         p_mesa_id: mesaId,
         p_usuario_id: adminUserId,
@@ -175,8 +205,9 @@ export default function PagamentoMesaModal({
 
       if (error) throw error;
       
-      const total = calcularValorTotal();
-      alert(`Pagamento total de R$ ${total.toFixed(2)} realizado com sucesso!`);
+      alert(`Pagamento total de R$ ${valorTotalMesa.toFixed(2)} realizado com sucesso!`);
+      // Recarregar os dados da mesa após o pagamento
+      await fetchPedidosMesa();
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -416,14 +447,15 @@ export default function PagamentoMesaModal({
                             }`}>
                               R$ {valorPedido.toFixed(2)}
                             </div>
-                            <div className={`text-sm px-3 py-1 rounded-full inline-block font-medium ${
-                              pedido.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
-                              pedido.status === 'preparando' ? 'bg-blue-100 text-blue-800' :
-                              pedido.status === 'entregue' ? 'bg-green-100 text-green-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {pedido.status}
-                            </div>
+                                                         <div className={`text-sm px-3 py-1 rounded-full inline-block font-medium ${
+                               pedido.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
+                               pedido.status === 'preparando' ? 'bg-blue-100 text-blue-800' :
+                               pedido.status === 'entregue' ? 'bg-green-100 text-green-800' :
+                               pedido.status === 'pago' ? 'bg-green-100 text-green-800' :
+                               'bg-gray-100 text-gray-800'
+                             }`}>
+                               {pedido.status === 'pago' ? 'Pago' : pedido.status}
+                             </div>
                             {isSelecionado && (
                               <div className="mt-1 text-xs text-blue-600 font-medium">
                                 ✅ Será pago

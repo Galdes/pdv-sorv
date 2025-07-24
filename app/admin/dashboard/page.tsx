@@ -135,6 +135,10 @@ export default function AdminDashboardPage() {
 
   const handlePagamentoSuccess = () => {
     fetchDashboardData();
+    // Fechar o modal de seleção de mesa se estiver aberto
+    if (showSelecionarMesaModal) {
+      setShowSelecionarMesaModal(false);
+    }
   };
 
   const handleMesaSelecionada = (mesa: { id: string; numero: number }) => {

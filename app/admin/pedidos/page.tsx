@@ -266,6 +266,10 @@ export default function AdminPedidosPage() {
 
   const handlePagamentoSuccess = () => {
     fetchPedidos();
+    // Fechar o modal de seleção de mesa se estiver aberto
+    if (showSelecionarMesaModal) {
+      setShowSelecionarMesaModal(false);
+    }
   };
 
   const handleMesaSelecionada = (mesa: { id: string; numero: number }) => {

@@ -176,10 +176,20 @@ BEGIN
     RETURN json_build_object('error', 'Nenhuma comanda aberta encontrada para esta mesa');
   END IF;
   
-  -- Calcular valor total
-  SELECT COALESCE(SUM(valor_restante), SUM(subtotal)) INTO v_valor_total
+  -- Calcular valor total - usar subtotal para pedidos já pagos
+  SELECT COALESCE(SUM(
+    CASE 
+      WHEN status = 'pago' THEN subtotal
+      ELSE COALESCE(valor_restante, subtotal)
+    END
+  ), 0) INTO v_valor_total
   FROM pedidos 
   WHERE comanda_id = v_comanda_id AND status != 'cancelado';
+  
+  -- Validar se há valor total
+  IF v_valor_total IS NULL OR v_valor_total <= 0 THEN
+    RETURN json_build_object('error', 'Valor total da mesa inválido ou zero');
+  END IF;
   
   -- Registrar pagamento
   INSERT INTO pagamentos_mesa (
@@ -203,7 +213,10 @@ BEGIN
   -- Marcar todos os pedidos como pagos
   UPDATE pedidos 
   SET 
-    valor_pago = COALESCE(valor_restante, subtotal),
+    valor_pago = CASE 
+      WHEN status = 'pago' THEN subtotal
+      ELSE COALESCE(valor_restante, subtotal)
+    END,
     valor_restante = 0,
     status = 'pago'
   WHERE comanda_id = v_comanda_id AND status != 'cancelado';

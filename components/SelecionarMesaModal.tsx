@@ -79,17 +79,25 @@ export default function SelecionarMesaModal({
           // Buscar pedidos pendentes das comandas
           const { data: pedidos } = await supabase
             .from('pedidos')
-            .select('valor_restante, subtotal')
+            .select('valor_restante, subtotal, status')
             .in('comanda_id', comandaIds)
             .neq('status', 'cancelado');
 
-          const totalPendente = pedidos?.reduce((total, pedido) => 
-            total + (pedido.valor_restante || pedido.subtotal), 0) || 0;
+          const totalPendente = pedidos?.reduce((total, pedido) => {
+            // Só incluir no total se o pedido não estiver pago
+            if (pedido.status !== 'pago') {
+              return total + (pedido.valor_restante || pedido.subtotal);
+            }
+            return total;
+          }, 0) || 0;
 
+          // Contar apenas pedidos não pagos
+          const pedidosNaoPagos = pedidos?.filter(pedido => pedido.status !== 'pago') || [];
+          
           return {
             ...mesa,
             total_pendente: totalPendente,
-            pedidos_count: pedidos?.length || 0
+            pedidos_count: pedidosNaoPagos.length
           };
         })
       );
