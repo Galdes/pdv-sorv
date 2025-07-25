@@ -1,0 +1,9 @@
+# Excluir Edge Functions do build da Vercel
+supabase/functions/
+
+# Outros arquivos que não devem ser incluídos
+.env.local
+.env.production
+*.log
+node_modules/
+.DS_Store 
