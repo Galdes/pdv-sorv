@@ -334,6 +334,20 @@ export default function AdminDashboardPage() {
             </AdminButton>
           </div>
         </AdminCard>
+
+        <AdminCard>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">⚙️ Configurações</h3>
+            <p className="text-sm text-gray-600 mb-4">Editar dados do estabelecimento</p>
+            <AdminButton
+              variant="primary"
+              onClick={() => router.push('/admin/configuracoes')}
+              title="Acessar configurações do estabelecimento"
+            >
+              Acessar
+            </AdminButton>
+          </div>
+        </AdminCard>
       </div>
 
       {/* Pedidos Recentes */}

@@ -20,6 +20,8 @@ interface FormBar {
   endereco: string;
   telefone: string;
   email: string;
+  descricao: string;
+  ativo: boolean;
 }
 
 export default function EstabelecimentosPage() {
@@ -34,7 +36,9 @@ export default function EstabelecimentosPage() {
     nome: '',
     endereco: '',
     telefone: '',
-    email: ''
+    email: '',
+    descricao: '',
+    ativo: true
   });
 
   useEffect(() => {
@@ -86,14 +90,21 @@ export default function EstabelecimentosPage() {
         // Atualizar bar
         const { error: errUpdate } = await supabase
           .from('bares')
-          .update(form)
+          .update({
+            ...form,
+            updated_at: new Date().toISOString()
+          })
           .eq('id', editingBar.id);
         if (errUpdate) throw errUpdate;
       } else {
         // Criar novo bar
         const { error: errInsert } = await supabase
           .from('bares')
-          .insert(form);
+          .insert({
+            ...form,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
         if (errInsert) throw errInsert;
       }
 
@@ -114,7 +125,9 @@ export default function EstabelecimentosPage() {
       nome: bar.nome,
       endereco: bar.endereco || '',
       telefone: bar.telefone || '',
-      email: bar.email || ''
+      email: bar.email || '',
+      descricao: bar.descricao || '',
+      ativo: bar.ativo
     });
     setShowForm(true);
   };
@@ -142,7 +155,9 @@ export default function EstabelecimentosPage() {
       nome: '',
       endereco: '',
       telefone: '',
-      email: ''
+      email: '',
+      descricao: '',
+      ativo: true
     });
   };
 
@@ -231,6 +246,34 @@ export default function EstabelecimentosPage() {
                title="Digite o email do estabelecimento"
              />
             
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Descrição
+              </label>
+              <textarea
+                name="descricao"
+                value={form.descricao}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setForm({...form, descricao: e.target.value})}
+                placeholder="Descrição do estabelecimento..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={3}
+                title="Digite uma descrição do estabelecimento"
+              />
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="ativo"
+                checked={form.ativo}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, ativo: e.target.checked})}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="ativo" className="ml-2 text-sm text-gray-700">
+                Estabelecimento ativo
+              </label>
+            </div>
+            
             <div className="flex gap-2">
               <AdminButton
                 type="submit"
@@ -271,6 +314,7 @@ export default function EstabelecimentosPage() {
               <AdminTableHeaderCell>Endereço</AdminTableHeaderCell>
               <AdminTableHeaderCell>Telefone</AdminTableHeaderCell>
               <AdminTableHeaderCell>Email</AdminTableHeaderCell>
+              <AdminTableHeaderCell>Descrição</AdminTableHeaderCell>
               <AdminTableHeaderCell>Status</AdminTableHeaderCell>
               <AdminTableHeaderCell>Ações</AdminTableHeaderCell>
             </AdminTableHeader>
@@ -288,6 +332,11 @@ export default function EstabelecimentosPage() {
                   </AdminTableCell>
                   <AdminTableCell>
                     <div className="text-sm">{bar.email || '-'}</div>
+                  </AdminTableCell>
+                  <AdminTableCell>
+                    <div className="text-sm text-gray-600 max-w-xs truncate" title={bar.descricao || '-'}>
+                      {bar.descricao || '-'}
+                    </div>
                   </AdminTableCell>
                   <AdminTableCell>
                     <span className={`px-2 py-1 text-xs rounded-full ${

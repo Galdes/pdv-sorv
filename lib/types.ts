@@ -6,6 +6,7 @@ export interface Bar {
   endereco?: string;
   telefone?: string;
   email?: string;
+  descricao?: string;
   ativo: boolean;
   created_at: string;
   updated_at: string;
@@ -162,6 +163,15 @@ export interface FormProduto {
   max_sabores?: number;
   ativo: boolean;
   imagem_url?: string;
+}
+
+export interface FormBar {
+  nome: string;
+  endereco: string;
+  telefone: string;
+  email: string;
+  descricao: string;
+  ativo: boolean;
 }
 
 // Tipos para respostas da API
