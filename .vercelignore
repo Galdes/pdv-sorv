@@ -1,5 +1,6 @@
 # Excluir Edge Functions do build da Vercel
 supabase/functions/
+edge-functions/
 
 # Outros arquivos que não devem ser incluídos
 .env.local
