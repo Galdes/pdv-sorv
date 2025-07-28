@@ -17,9 +17,6 @@ interface Conversa {
   status: string;
   ultima_interacao: string;
   created_at: string;
-  _count?: {
-    mensagens: number;
-  };
 }
 
 export default function WhatsAppPage() {
@@ -38,12 +35,7 @@ export default function WhatsAppPage() {
     try {
       const { data, error } = await supabase
         .from('conversas_whatsapp')
-        .select(`
-          *,
-          _count {
-            mensagens: mensagens_whatsapp(count)
-          }
-        `)
+        .select('*')
         .order('ultima_interacao', { ascending: false });
 
       if (error) throw error;
@@ -169,10 +161,10 @@ export default function WhatsAppPage() {
                         {formatarTelefone(conversa.numero_cliente)}
                       </div>
                       
-                      <div className="flex items-center gap-1">
-                        <MessageCircle size={16} />
-                        {conversa._count?.mensagens || 0} mensagens
-                      </div>
+                                             <div className="flex items-center gap-1">
+                         <MessageCircle size={16} />
+                         Conversa ativa
+                       </div>
                     </div>
                   </div>
                 </div>
