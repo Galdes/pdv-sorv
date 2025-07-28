@@ -3,21 +3,44 @@ import { supabase } from '../../../../lib/supabaseClient';
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar token de autorização (temporariamente desabilitado para teste)
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('Token não fornecido, mas continuando para teste');
-      // return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    console.log('=== WEBHOOK WHATSAPP RECEBIDO ===');
+    
+    // Verificar token de autorização (TEMPORARIAMENTE DESABILITADO PARA TESTE)
+    // const authHeader = request.headers.get('authorization');
+    // if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    //   console.log('Token não fornecido, mas continuando para teste');
+    //   // return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // }
 
-    const token = authHeader?.replace('Bearer ', '');
-    if (token && token !== process.env.WEBHOOK_SECRET_TOKEN) {
-      console.log('Token inválido, mas continuando para teste');
-      // return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    // const token = authHeader?.replace('Bearer ', '');
+    // if (token && token !== process.env.WEBHOOK_SECRET_TOKEN) {
+    //   console.log('Token inválido, mas continuando para teste');
+    //   // return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    // }
 
     const body = await request.json();
-    const { conversa, mensagem } = body;
+    console.log('Body completo recebido:', body);
+    
+    // Extrair dados da estrutura do N8N
+    let conversa, mensagem;
+    
+    if (body.body && body.body.conversa && body.body.mensagem) {
+      // Estrutura do N8N: { body: { conversa: {...}, mensagem: {...} } }
+      conversa = body.body.conversa;
+      mensagem = body.body.mensagem;
+    } else if (body.conversa && body.mensagem) {
+      // Estrutura direta: { conversa: {...}, mensagem: {...} }
+      conversa = body.conversa;
+      mensagem = body.mensagem;
+    } else {
+      console.error('Estrutura inválida:', body);
+      return NextResponse.json(
+        { error: 'Invalid request structure' }, 
+        { status: 400 }
+      );
+    }
+    
+    console.log('Dados extraídos:', { conversa, mensagem });
 
     // 1. Salvar/atualizar conversa
     const { data: conversaExistente } = await supabase
@@ -29,6 +52,7 @@ export async function POST(request: NextRequest) {
     let conversaId: string;
 
     if (conversaExistente) {
+      console.log('Conversa existente encontrada:', conversaExistente.id);
       // Atualizar conversa existente
       const { data: conversaAtualizada, error: errorConversa } = await supabase
         .from('conversas_whatsapp')
@@ -45,6 +69,7 @@ export async function POST(request: NextRequest) {
       if (errorConversa) throw errorConversa;
       conversaId = conversaAtualizada.id;
     } else {
+      console.log('Criando nova conversa');
       // Criar nova conversa
       const { data: novaConversa, error: errorConversa } = await supabase
         .from('conversas_whatsapp')
@@ -61,7 +86,16 @@ export async function POST(request: NextRequest) {
       conversaId = novaConversa.id;
     }
 
+    console.log('Conversa ID:', conversaId);
+
     // 2. Salvar mensagem
+    console.log('Salvando mensagem:', {
+      conversa_id: conversaId,
+      tipo: mensagem.tipo,
+      conteudo: mensagem.conteudo,
+      timestamp: mensagem.timestamp
+    });
+    
     const { error: errorMensagem } = await supabase
       .from('mensagens_whatsapp')
       .insert({
@@ -71,7 +105,12 @@ export async function POST(request: NextRequest) {
         timestamp: mensagem.timestamp
       });
 
-    if (errorMensagem) throw errorMensagem;
+    if (errorMensagem) {
+      console.error('Erro ao salvar mensagem:', errorMensagem);
+      throw errorMensagem;
+    }
+
+    console.log('Mensagem salva com sucesso');
 
     return NextResponse.json({ 
       success: true, 
