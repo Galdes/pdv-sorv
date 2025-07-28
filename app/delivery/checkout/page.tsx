@@ -87,6 +87,10 @@ export default function CheckoutDelivery() {
       const camposObrigatorios = ['nome_destinatario', 'telefone', 'logradouro', 'numero', 'bairro', 'cidade', 'estado'];
       return camposObrigatorios.every(campo => endereco[campo as keyof Endereco].trim() !== '');
     }
+    if (tipoServico === 'retirada') {
+      const camposObrigatorios = ['nome_destinatario', 'telefone'];
+      return camposObrigatorios.every(campo => endereco[campo as keyof Endereco].trim() !== '');
+    }
     return true;
   };
 
@@ -105,7 +109,7 @@ export default function CheckoutDelivery() {
       );
       const total = subtotal + taxaEntrega;
 
-      // 1. Salvar endereço se for entrega
+      // 1. Salvar dados do cliente (entrega ou retirada)
       let enderecoId = null;
       if (tipoServico === 'entrega') {
         const { data: enderecoData, error: enderecoError } = await supabase
@@ -121,6 +125,24 @@ export default function CheckoutDelivery() {
             cidade: endereco.cidade,
             estado: endereco.estado,
             referencia: endereco.referencia
+          })
+          .select('id')
+          .single();
+
+        if (enderecoError) throw enderecoError;
+        enderecoId = enderecoData.id;
+      } else if (tipoServico === 'retirada') {
+        // Para retirada, salvar apenas nome e telefone
+        const { data: enderecoData, error: enderecoError } = await supabase
+          .from('enderecos_entrega')
+          .insert({
+            nome_destinatario: endereco.nome_destinatario,
+            telefone: endereco.telefone,
+            logradouro: 'Retirada no local',
+            numero: 'N/A',
+            bairro: 'N/A',
+            cidade: 'N/A',
+            estado: 'N/A'
           })
           .select('id')
           .single();
@@ -216,6 +238,38 @@ export default function CheckoutDelivery() {
           </button>
         </div>
       </div>
+
+      {tipoServico === 'retirada' && (
+        <div>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Dados para Retirada</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
+              <input
+                type="text"
+                value={endereco.nome_destinatario}
+                onChange={(e) => handleEnderecoChange('nome_destinatario', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Seu nome completo"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Telefone *</label>
+              <input
+                type="tel"
+                value={endereco.telefone}
+                onChange={(e) => handleEnderecoChange('telefone', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="(11) 99999-9999"
+              />
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 mt-2">
+            💡 Esses dados ajudam nossos atendentes a identificar seu pedido quando você chegar na sorveteria.
+          </p>
+        </div>
+      )}
 
       {tipoServico === 'entrega' && (
         <div>
@@ -480,6 +534,17 @@ export default function CheckoutDelivery() {
           </div>
         )}
 
+        {tipoServico === 'retirada' && (
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-gray-800 mb-3">Dados para Retirada</h3>
+            <div className="text-sm text-gray-600">
+              <p><strong>Nome:</strong> {endereco.nome_destinatario}</p>
+              <p><strong>Telefone:</strong> {endereco.telefone}</p>
+              <p className="text-blue-600 mt-2">📍 Retirada no local da sorveteria</p>
+            </div>
+          </div>
+        )}
+
         <div className="bg-blue-50 rounded-lg p-4">
           <h3 className="font-semibold text-blue-800 mb-2">📋 Itens do Pedido</h3>
           <div className="space-y-2">
@@ -570,6 +635,18 @@ export default function CheckoutDelivery() {
                       // Validar antes de avançar
                       if (step === 1 && tipoServico === 'entrega') {
                         const camposObrigatorios = ['nome_destinatario', 'telefone', 'logradouro', 'numero', 'bairro', 'cidade', 'estado'];
+                        const camposVazios = camposObrigatorios.filter(campo => 
+                          endereco[campo as keyof Endereco].trim() === ''
+                        );
+                        
+                        if (camposVazios.length > 0) {
+                          alert(`Por favor, preencha os seguintes campos obrigatórios: ${camposVazios.join(', ')}`);
+                          return;
+                        }
+                      }
+                      
+                      if (step === 1 && tipoServico === 'retirada') {
+                        const camposObrigatorios = ['nome_destinatario', 'telefone'];
                         const camposVazios = camposObrigatorios.filter(campo => 
                           endereco[campo as keyof Endereco].trim() === ''
                         );

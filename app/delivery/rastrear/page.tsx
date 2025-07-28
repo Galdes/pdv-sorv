@@ -322,6 +322,14 @@ export default function RastrearPedidoPage() {
                         {formatarValor(pedido.valor_total)}
                       </span>
                     </div>
+                    {pedido.valor_troco && pedido.valor_troco > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Troco:</span>
+                        <span className="font-medium text-orange-600">
+                          {formatarValor(pedido.valor_troco)}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Telefone:</span>
                       <span className="font-medium">

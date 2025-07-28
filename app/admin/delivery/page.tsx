@@ -25,6 +25,7 @@ interface PedidoExterno {
   status: string;
   forma_pagamento: string;
   valor_total: number;
+  valor_troco?: number;
   observacoes?: string;
   created_at: string;
   enderecos_entrega?: {
@@ -205,13 +206,13 @@ ${pedido.itens_pedido_externo?.map(item =>
 ).join('\n') || 'Nenhum item encontrado'}
 ${'-'.repeat(48)}
 TOTAL: R$ ${pedido.valor_total.toFixed(2).replace('.', ',')}
-${'-'.repeat(48)}
+${pedido.valor_troco && pedido.valor_troco > 0 ? `TROCO: R$ ${pedido.valor_troco.toFixed(2).replace('.', ',')}\n` : ''}${'-'.repeat(48)}
 OBSERVAÇÕES:
 ${pedido.observacoes || 'Nenhuma observação'}
 ${'-'.repeat(48)}
            OBRIGADO PELA PREFERÊNCIA!
 
-        www.sorveteriaconteiner.com
+        Nosso Instagram: @containersorv
 ${'='.repeat(48)}
 `;
 
@@ -534,6 +535,11 @@ ${'='.repeat(48)}
                       <div className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
                         {pedido.forma_pagamento?.toUpperCase()}
                       </div>
+                      {pedido.valor_troco && pedido.valor_troco > 0 && (
+                        <div className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded mt-1">
+                          Troco: {formatarValor(pedido.valor_troco)}
+                        </div>
+                      )}
                     </div>
                     <span className={`px-4 py-2 rounded-full text-sm font-medium shadow-sm ${getStatusColor(pedido.status)}`}>
                       <div className="flex items-center gap-2">
@@ -548,8 +554,8 @@ ${'='.repeat(48)}
                 {pedido.enderecos_entrega && (
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 mb-6 border border-blue-100">
                     <div className="flex items-start gap-3">
-                      <div className="bg-blue-500 p-2 rounded-lg">
-                        <MapPin size={16} className="text-white" />
+                      <div className={`p-2 rounded-lg ${pedido.tipo_servico === 'retirada' ? 'bg-orange-500' : 'bg-blue-500'}`}>
+                        {pedido.tipo_servico === 'retirada' ? <Store size={16} className="text-white" /> : <MapPin size={16} className="text-white" />}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -559,12 +565,21 @@ ${'='.repeat(48)}
                             {pedido.enderecos_entrega.telefone}
                           </div>
                         </div>
-                        <p className="text-sm text-gray-700">
-                          {pedido.enderecos_entrega.logradouro}, {pedido.enderecos_entrega.numero} - {pedido.enderecos_entrega.bairro}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {pedido.enderecos_entrega.cidade}/{pedido.enderecos_entrega.estado}
-                        </p>
+                        {pedido.tipo_servico === 'retirada' ? (
+                          <div className="text-sm text-gray-700">
+                            <p className="font-medium text-orange-600">📍 Retirada no local</p>
+                            <p className="text-gray-600">Cliente retirará na sorveteria</p>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-sm text-gray-700">
+                              {pedido.enderecos_entrega.logradouro}, {pedido.enderecos_entrega.numero} - {pedido.enderecos_entrega.bairro}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {pedido.enderecos_entrega.cidade}/{pedido.enderecos_entrega.estado}
+                            </p>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -11,6 +11,7 @@ interface PedidoExterno {
   status: string;
   forma_pagamento: string;
   valor_total: number;
+  valor_troco?: number;
   observacoes?: string;
   created_at: string;
   enderecos_entrega?: {
@@ -239,6 +240,15 @@ export default function AcompanharPedidoPage() {
                 {formatarValor(pedido.valor_total)}
               </span>
             </div>
+            
+            {pedido.valor_troco && pedido.valor_troco > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Troco:</span>
+                <span className="font-medium text-orange-600">
+                  {formatarValor(pedido.valor_troco)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
