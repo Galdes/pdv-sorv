@@ -249,6 +249,20 @@ export default function AdminDashboardPage() {
           </div>
         </AdminCard>
 
+        <AdminCard>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">💬 WhatsApp</h3>
+            <p className="text-sm text-gray-600 mb-4">Conversas e atendimento</p>
+            <AdminButton
+              variant="success"
+              onClick={() => router.push('/admin/whatsapp')}
+              title="Acessar conversas do WhatsApp"
+            >
+              Acessar
+            </AdminButton>
+          </div>
+        </AdminCard>
+
         {/* GRUPO 2: CONFIGURAÇÕES DE PRODUTOS (AZUL) */}
         <AdminCard>
           <div className="text-center">
