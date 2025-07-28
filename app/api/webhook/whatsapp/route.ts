@@ -54,6 +54,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Corrigir o tipo da mensagem se necessário
+    let tipoMensagem = mensagem.tipo;
+    if (tipoMensagem === 'sistema') {
+      tipoMensagem = 'enviada'; // Mudar para 'enviada' que é aceito pelo banco
+      console.log('Tipo "sistema" alterado para "enviada"');
+    }
+
     // 1. Salvar/atualizar conversa
     console.log('Buscando conversa existente...');
     const { data: conversaExistente, error: errorBusca } = await supabase
@@ -115,7 +122,7 @@ export async function POST(request: NextRequest) {
     // 2. Salvar mensagem
     console.log('Salvando mensagem:', {
       conversa_id: conversaId,
-      tipo: mensagem.tipo,
+      tipo: tipoMensagem,
       conteudo: mensagem.conteudo,
       timestamp: mensagem.timestamp
     });
@@ -124,7 +131,7 @@ export async function POST(request: NextRequest) {
       .from('mensagens_whatsapp')
       .insert({
         conversa_id: conversaId,
-        tipo: mensagem.tipo,
+        tipo: tipoMensagem,
         conteudo: mensagem.conteudo,
         timestamp: mensagem.timestamp
       });
