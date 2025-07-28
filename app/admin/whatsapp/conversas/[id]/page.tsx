@@ -73,7 +73,8 @@ export default function ChatPage() {
         .from('mensagens_whatsapp')
         .select('*')
         .eq('conversa_id', conversaId)
-        .order('timestamp', { ascending: true });
+        .order('timestamp', { ascending: true })
+        .order('id', { ascending: true }); // Ordenar também por ID para garantir ordem
 
       if (error) throw error;
       setMensagens(data || []);
