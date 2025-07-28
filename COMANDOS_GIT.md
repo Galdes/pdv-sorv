@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "feat: melhorar layout da página de conversa WhatsApp"
+git commit -m "fix: corrigir timestamp das mensagens do webhook"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,23 +18,21 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "feat: melhorar layout da página de conversa WhatsApp" && git push origin main
+git add . && git commit -m "fix: corrigir timestamp das mensagens do webhook" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Melhorias no layout da conversa WhatsApp**
-- Header moderno com AdminCard
-- Design responsivo e suporte ao modo dark
-- Interface mais limpa e profissional
+✅ **Correção do timestamp no webhook**
+- Forçar timestamp atual em vez do timestamp do N8N
+- Corrigir ordem de exibição das mensagens
 
-✅ **Correção do import do AdminLayout**
-- Caminho correto para o componente
+✅ **Melhorias no webhook**
+- Logs mais detalhados
+- Melhor tratamento de erros
 
-✅ **Melhorias na experiência do usuário**
-- Botão "Voltar" no header
-- Estados de loading melhorados
-- Mensagens mais claras
+✅ **Correção da ordem das mensagens**
+- Mensagens agora aparecem na ordem correta
 
 ## 🔍 Como verificar se funcionou:
 

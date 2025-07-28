@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Enviar mensagem via Z-API
-    const response = await fetch('https://api.z-api.io/instances/SUA_INSTANCIA/token/SEU_TOKEN/send-text', {
+    const response = await fetch('https://api.z-api.io/instances/3E29A3AF9423B0EA10A44AAAADA6D328/token/7D1DE18113C654C07EA765C7/send-text', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

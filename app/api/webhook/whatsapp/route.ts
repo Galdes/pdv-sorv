@@ -4,7 +4,9 @@ import { supabase } from '../../../../lib/supabaseClient';
 export async function POST(request: NextRequest) {
   try {
     console.log('=== WEBHOOK WHATSAPP RECEBIDO ===');
+    console.log('Timestamp:', new Date().toISOString());
     console.log('Headers:', Object.fromEntries(request.headers.entries()));
+    console.log('URL:', request.url);
     
     // Verificar token de autorização (TEMPORARIAMENTE DESABILITADO PARA TESTE)
     // const authHeader = request.headers.get('authorization');
@@ -133,7 +135,7 @@ export async function POST(request: NextRequest) {
         conversa_id: conversaId,
         tipo: tipoMensagem,
         conteudo: mensagem.conteudo,
-        timestamp: mensagem.timestamp
+        timestamp: new Date().toISOString() // Forçar timestamp atual
       });
 
     if (errorMensagem) {
@@ -142,11 +144,22 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Mensagem salva com sucesso');
+    console.log('Preparando resposta...');
 
-    return NextResponse.json({ 
+    console.log('=== WEBHOOK PROCESSADO COM SUCESSO ===');
+    console.log('Conversa ID:', conversaId);
+    console.log('Tempo de processamento:', new Date().toISOString());
+    
+    const response = { 
       success: true, 
-      conversa_id: conversaId 
-    });
+      conversa_id: conversaId,
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log('Resposta final:', response);
+    console.log('Enviando resposta...');
+    
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('Erro no webhook WhatsApp:', error);
