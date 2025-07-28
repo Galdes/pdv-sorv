@@ -1,0 +1,5 @@
+[33m1ce19ed[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix: corrigir caminho do import do Supabase no webhook
+[33mf01d6ea[m fix: corrigir erro de Supabase no webhook - usar cliente compartilhado
+[33m759dfd4[m fix: corrigir erro de TypeScript na consulta do Supabase - remover _count temporariamente
+[33m4fc5f78[m feat: implementar sistema WhatsApp completo - Webhook, chat e interface administrativa
+[33m875c331[m feat: implementar nome e telefone para retirada + corrigir exibição do troco

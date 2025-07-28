@@ -26,7 +26,6 @@ export default function WhatsAppPage() {
 
   useEffect(() => {
     carregarConversas();
-    // Atualizar a cada 30 segundos
     const interval = setInterval(carregarConversas, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -93,7 +92,7 @@ export default function WhatsAppPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <MessageCircle className="text-green-600" size={32} />
-            WhatsApp - Conversas
+            WhatsApp - Conversas (v3)
           </h1>
           <p className="text-gray-600 mt-2">
             Gerencie as conversas do WhatsApp e intervenha quando necessário
@@ -161,10 +160,10 @@ export default function WhatsAppPage() {
                         {formatarTelefone(conversa.numero_cliente)}
                       </div>
                       
-                                             <div className="flex items-center gap-1">
-                         <MessageCircle size={16} />
-                         Conversa ativa
-                       </div>
+                      <div className="flex items-center gap-1">
+                        <MessageCircle size={16} />
+                        Conversa ativa
+                      </div>
                     </div>
                   </div>
                 </div>
