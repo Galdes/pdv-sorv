@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Send, User, MessageCircle, Clock, Phone, MoreVertical, Trash2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Send, User, MessageCircle, Clock, Phone, MoreVertical, Trash2, AlertTriangle, UserCheck, UserX } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import AdminLayout, { AdminCard, AdminButton } from '../../../../../components/AdminLayout';
 
@@ -25,6 +25,10 @@ interface Conversa {
   nome_cliente: string;
   status: string;
   ultima_interacao: string;
+  modo_atendimento?: string;
+  atendente_nome?: string;
+  assumido_em?: string;
+  bloqueado_ate?: string;
 }
 
 export default function ChatPage() {
@@ -39,6 +43,8 @@ export default function ChatPage() {
   const [enviando, setEnviando] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
+  const [assumindo, setAssumindo] = useState(false);
+  const [liberando, setLiberando] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -151,6 +157,75 @@ export default function ChatPage() {
     }
   };
 
+  const assumirConversa = async () => {
+    if (!conversa) return;
+
+    setAssumindo(true);
+    try {
+      const response = await fetch('/api/whatsapp/assumir-conversa', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversa_id: conversaId,
+          acao: 'assumir',
+          atendente_nome: 'Atendente' // Você pode personalizar isso
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao assumir conversa');
+      }
+
+      const result = await response.json();
+      console.log('Conversa assumida:', result);
+
+      // Recarregar conversa para atualizar status
+      await carregarConversa();
+    } catch (error) {
+      console.error('Erro ao assumir conversa:', error);
+      alert('Erro ao assumir conversa. Tente novamente.');
+    } finally {
+      setAssumindo(false);
+    }
+  };
+
+  const liberarConversa = async () => {
+    if (!conversa) return;
+
+    setLiberando(true);
+    try {
+      const response = await fetch('/api/whatsapp/assumir-conversa', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversa_id: conversaId,
+          acao: 'liberar'
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao liberar conversa');
+      }
+
+      const result = await response.json();
+      console.log('Conversa liberada:', result);
+
+      // Recarregar conversa para atualizar status
+      await carregarConversa();
+    } catch (error) {
+      console.error('Erro ao liberar conversa:', error);
+      alert('Erro ao liberar conversa. Tente novamente.');
+    } finally {
+      setLiberando(false);
+    }
+  };
+
   const excluirConversa = async () => {
     if (!conversa) return;
 
@@ -203,6 +278,17 @@ export default function ChatPage() {
     }
   };
 
+  const getModoAtendimentoColor = (modo: string) => {
+    switch (modo) {
+      case 'humano':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'bot':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+    }
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -229,6 +315,10 @@ export default function ChatPage() {
       </AdminLayout>
     );
   }
+
+  const isModoHumano = conversa.modo_atendimento === 'humano';
+  const tempoRestante = conversa.bloqueado_ate ? Math.max(0, new Date(conversa.bloqueado_ate).getTime() - new Date().getTime()) : 0;
+  const minutosRestantes = Math.ceil(tempoRestante / (1000 * 60));
 
   return (
     <AdminLayout title="WhatsApp">
@@ -267,6 +357,22 @@ export default function ChatPage() {
               <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(conversa.status)}`}>
                 {conversa.status}
               </span>
+              
+              <span className={`px-3 py-1 rounded-full text-xs font-bold ${getModoAtendimentoColor(conversa.modo_atendimento || 'bot')}`}>
+                {conversa.modo_atendimento === 'humano' ? '👤 Humano' : '🤖 Bot'}
+              </span>
+              
+              {isModoHumano && conversa.atendente_nome && (
+                <span className="text-xs text-gray-600 dark:text-gray-300">
+                  Atendido por: {conversa.atendente_nome}
+                </span>
+              )}
+              
+              {isModoHumano && minutosRestantes > 0 && (
+                <span className="text-xs text-orange-600 dark:text-orange-400">
+                  {minutosRestantes}min restantes
+                </span>
+              )}
               
               <button 
                 onClick={() => setShowDeleteModal(true)}
@@ -346,6 +452,29 @@ export default function ChatPage() {
                 <Send size={18} />
                 {enviando ? 'Enviando...' : 'Enviar'}
               </AdminButton>
+              
+              {/* Botão Assumir/Liberar */}
+              {!isModoHumano ? (
+                <AdminButton
+                  variant="secondary"
+                  onClick={assumirConversa}
+                  disabled={assumindo}
+                  className="flex items-center gap-2 px-4"
+                >
+                  <UserCheck size={18} />
+                  {assumindo ? 'Assumindo...' : 'Assumir'}
+                </AdminButton>
+              ) : (
+                <AdminButton
+                  variant="danger"
+                  onClick={liberarConversa}
+                  disabled={liberando}
+                  className="flex items-center gap-2 px-4"
+                >
+                  <UserX size={18} />
+                  {liberando ? 'Liberando...' : 'Liberar'}
+                </AdminButton>
+              )}
             </div>
           </div>
         </div>

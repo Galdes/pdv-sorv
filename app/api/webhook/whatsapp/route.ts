@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('Dados extraídos:', { conversa, mensagem });
-
+    
     // Validar dados obrigatórios
     if (!conversa.numero_cliente || !mensagem.conteudo) {
       console.error('Dados obrigatórios faltando:', { conversa, mensagem });
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     console.log('Buscando conversa existente...');
     const { data: conversaExistente, error: errorBusca } = await supabase
       .from('conversas_whatsapp')
-      .select('id')
+      .select('id, modo_atendimento, bloqueado_ate')
       .eq('numero_cliente', conversa.numero_cliente)
       .single();
 
@@ -80,24 +80,102 @@ export async function POST(request: NextRequest) {
 
     if (conversaExistente) {
       console.log('Conversa existente encontrada:', conversaExistente.id);
-      // Atualizar conversa existente
-      const { data: conversaAtualizada, error: errorConversa } = await supabase
-        .from('conversas_whatsapp')
-        .update({
-          nome_cliente: conversa.nome_cliente,
-          status: conversa.status,
-          ultima_interacao: conversa.ultima_interacao,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', conversaExistente.id)
-        .select('id')
-        .single();
+      
+      // Verificar se conversa está em modo humano e se o bloqueio ainda é válido
+      const agora = new Date();
+      const bloqueioExpirado = conversaExistente.bloqueado_ate && new Date(conversaExistente.bloqueado_ate) < agora;
+      
+      if (conversaExistente.modo_atendimento === 'humano' && !bloqueioExpirado) {
+        console.log('Conversa em modo humano - bloqueando processamento');
+        // Atualizar conversa mas não processar
+        const { data: conversaAtualizada, error: errorConversa } = await supabase
+          .from('conversas_whatsapp')
+          .update({
+            nome_cliente: conversa.nome_cliente,
+            status: conversa.status,
+            ultima_interacao: conversa.ultima_interacao,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', conversaExistente.id)
+          .select('id')
+          .single();
 
-      if (errorConversa) {
-        console.error('Erro ao atualizar conversa:', errorConversa);
-        throw errorConversa;
+        if (errorConversa) {
+          console.error('Erro ao atualizar conversa:', errorConversa);
+          throw errorConversa;
+        }
+        conversaId = conversaAtualizada.id;
+        
+        // Salvar mensagem mas não processar
+        const { error: errorMensagem } = await supabase
+          .from('mensagens_whatsapp')
+          .insert({
+            conversa_id: conversaId,
+            tipo: tipoMensagem,
+            conteudo: mensagem.conteudo,
+            timestamp: new Date().toISOString(),
+            lida: tipoMensagem === 'recebida' ? false : true
+          });
+
+        if (errorMensagem) {
+          console.error('Erro ao salvar mensagem:', errorMensagem);
+          throw errorMensagem;
+        }
+
+        console.log('Mensagem salva em modo humano - processamento bloqueado');
+        return NextResponse.json({
+          success: true,
+          message: 'Mensagem salva em modo humano',
+          conversa_id: conversaId,
+          modo: 'humano',
+          timestamp: new Date().toISOString()
+        });
+      } else if (bloqueioExpirado) {
+        console.log('Bloqueio expirado - voltando para modo bot');
+        // Liberar conversa automaticamente
+        const { data: conversaLiberada, error: errorLiberacao } = await supabase
+          .from('conversas_whatsapp')
+          .update({
+            modo_atendimento: 'bot',
+            atendente_id: null,
+            atendente_nome: null,
+            assumido_em: null,
+            bloqueado_ate: null,
+            nome_cliente: conversa.nome_cliente,
+            status: conversa.status,
+            ultima_interacao: conversa.ultima_interacao,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', conversaExistente.id)
+          .select('id')
+          .single();
+
+        if (errorLiberacao) {
+          console.error('Erro ao liberar conversa:', errorLiberacao);
+          throw errorLiberacao;
+        }
+        conversaId = conversaLiberada.id;
+        console.log('Conversa liberada automaticamente');
+      } else {
+        // Modo bot - processar normalmente
+        const { data: conversaAtualizada, error: errorConversa } = await supabase
+          .from('conversas_whatsapp')
+          .update({
+            nome_cliente: conversa.nome_cliente,
+            status: conversa.status,
+            ultima_interacao: conversa.ultima_interacao,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', conversaExistente.id)
+          .select('id')
+          .single();
+
+        if (errorConversa) {
+          console.error('Erro ao atualizar conversa:', errorConversa);
+          throw errorConversa;
+        }
+        conversaId = conversaAtualizada.id;
       }
-      conversaId = conversaAtualizada.id;
     } else {
       console.log('Criando nova conversa');
       // Criar nova conversa
@@ -107,7 +185,8 @@ export async function POST(request: NextRequest) {
           numero_cliente: conversa.numero_cliente,
           nome_cliente: conversa.nome_cliente,
           status: conversa.status,
-          ultima_interacao: conversa.ultima_interacao
+          ultima_interacao: conversa.ultima_interacao,
+          modo_atendimento: 'bot' // Nova conversa sempre em modo bot
         })
         .select('id')
         .single();
@@ -126,7 +205,7 @@ export async function POST(request: NextRequest) {
       conversa_id: conversaId,
       tipo: tipoMensagem,
       conteudo: mensagem.conteudo,
-      timestamp: mensagem.timestamp
+      timestamp: new Date().toISOString()
     });
     
     const { error: errorMensagem } = await supabase
@@ -135,8 +214,8 @@ export async function POST(request: NextRequest) {
         conversa_id: conversaId,
         tipo: tipoMensagem,
         conteudo: mensagem.conteudo,
-        timestamp: new Date().toISOString(), // Forçar timestamp atual
-        lida: tipoMensagem === 'recebida' ? false : true // Mensagens recebidas começam como não lidas
+        timestamp: new Date().toISOString(),
+        lida: tipoMensagem === 'recebida' ? false : true
       });
 
     if (errorMensagem) {

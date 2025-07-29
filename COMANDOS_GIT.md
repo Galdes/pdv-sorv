@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "feat: adicionar funcionalidade de exclusão de conversas WhatsApp"
+git commit -m "feat: implementar sistema de intervenção humana no WhatsApp"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,10 +18,17 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "feat: adicionar funcionalidade de exclusão de conversas WhatsApp" && git push origin main
+git add . && git commit -m "feat: implementar sistema de intervenção humana no WhatsApp" && git push origin main
 ```
 
 ## 📝 O que será enviado:
+
+✅ **Sistema de Intervenção Humana**
+- Botão "Assumir Conversa" na interface
+- Botão "Liberar para Bot" 
+- Timeout automático de 5 minutos
+- Verificação de modo no webhook
+- Bloqueio automático do bot quando humano assume
 
 ✅ **Funcionalidade de Exclusão**
 - Botão de excluir na conversa individual
@@ -44,10 +51,13 @@ git add . && git commit -m "feat: adicionar funcionalidade de exclusão de conve
 ✅ **Melhorias no Webhook**
 - Campo "lida" nas mensagens
 - Mensagens recebidas começam como não lidas
+- Verificação de modo de atendimento
 
 ✅ **Interface Aprimorada**
 - Card "Não Lidas" no dashboard
 - Badge vermelho nas conversas com mensagens não lidas
+- Indicador de modo de atendimento (Bot/Humano)
+- Contador de tempo restante
 
 ## 🔍 Como verificar se funcionou:
 
