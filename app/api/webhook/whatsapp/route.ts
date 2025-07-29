@@ -1,3 +1,22 @@
+/**
+ * 🚨 AVISOS IMPORTANTES:
+ * 
+ * 1. Este webhook recebe dados do N8N
+ *    - Fluxo: Z-API → N8N → Este webhook → Sistema
+ * 
+ * 2. Intervenção Humana:
+ *    - Verifica modo_atendimento (bot/humano)
+ *    - Bloqueia processamento se humano ativo
+ *    - Libera automaticamente após 5 minutos
+ * 
+ * 3. ⚠️ PROBLEMA CONHECIDO:
+ *    - Sistema e Redis têm contadores independentes
+ *    - Pode haver desincronização de timeout
+ *    - Solução: Implementar sincronização via webhooks
+ * 
+ * 4. Logs detalhados para debug
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabaseClient';
 

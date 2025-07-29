@@ -1,3 +1,20 @@
+/**
+ * 🚨 AVISOS IMPORTANTES:
+ * 
+ * 1. URL do ngrok muda a cada reinicialização!
+ *    - Atualizar N8N_SEND_WEBHOOK_URL no Vercel
+ *    - URL atual: https://aec91f83329e.ngrok-free.app
+ * 
+ * 2. Fluxo: Sistema → ngrok → N8N → Z-API → WhatsApp
+ * 
+ * 3. Se der erro 500, verificar:
+ *    - ngrok está rodando?
+ *    - URL está correta no Vercel?
+ *    - N8N está ativo?
+ * 
+ * 4. Logs detalhados para debug
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
