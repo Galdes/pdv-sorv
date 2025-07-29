@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "feat: implementar sistema de intervenção humana no WhatsApp"
+git commit -m "docs: adicionar documentação completa e limpar arquivos desnecessários"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,52 +18,49 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "feat: implementar sistema de intervenção humana no WhatsApp" && git push origin main
+git add . && git commit -m "docs: adicionar documentação completa e limpar arquivos desnecessários" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Sistema de Intervenção Humana**
-- Botão "Assumir Conversa" na interface
-- Botão "Liberar para Bot" 
-- Timeout automático de 5 minutos
-- Verificação de modo no webhook
-- Bloqueio automático do bot quando humano assume
+✅ **Documentação Completa**
+- `DOCUMENTACAO_SISTEMA.md` - Documentação técnica completa
+- Comentários importantes nos arquivos de API
+- Avisos sobre URL do ngrok e problemas conhecidos
 
-✅ **Funcionalidade de Exclusão**
-- Botão de excluir na conversa individual
-- Botão de excluir na lista de conversas
-- Modal de confirmação com aviso de segurança
-- API endpoint para exclusão segura
-- Exclusão automática de mensagens (CASCADE)
+✅ **Limpeza de Arquivos**
+- Removido `h origin main` (arquivo de log)
+- Removido `RESUMO_CHATBOT_TESTE.md` (documentação antiga)
+- Removido `prompt-chatbot-sorveteria.md` (versão antiga)
 
-✅ **Sistema de Notificações**
-- Badge de notificações não lidas
-- Contador por conversa
-- Estatísticas gerais
-- Marcação automática como lida
+✅ **Comentários nos Códigos**
+- Avisos sobre URL do ngrok em `app/api/whatsapp/enviar/route.ts`
+- Documentação de intervenção humana em `app/api/webhook/whatsapp/route.ts`
+- Logs detalhados para debug
 
-✅ **Ordenação Inteligente**
-- Conversas com mensagens não lidas aparecem primeiro
-- Depois ordenadas por última interação
-- Priorização automática de conversas urgentes
+## 🚨 AVISOS IMPORTANTES DOCUMENTADOS:
 
-✅ **Melhorias no Webhook**
-- Campo "lida" nas mensagens
-- Mensagens recebidas começam como não lidas
-- Verificação de modo de atendimento
+### **1. URL do Ngrok**
+- Muda a cada reinicialização
+- Atualizar `N8N_SEND_WEBHOOK_URL` no Vercel
+- URL atual: `https://aec91f83329e.ngrok-free.app`
 
-✅ **Interface Aprimorada**
-- Card "Não Lidas" no dashboard
-- Badge vermelho nas conversas com mensagens não lidas
-- Indicador de modo de atendimento (Bot/Humano)
-- Contador de tempo restante
+### **2. Problemas Conhecidos**
+- Desincronização entre sistema e Redis
+- Ordem de mensagens pode estar incorreta
+- Timeout de 5 minutos para intervenção humana
+
+### **3. Checklist de Deploy**
+- Verificar ngrok antes de deploy
+- Atualizar URL no Vercel após reinicialização
+- Testar envio de mensagem
 
 ## 🔍 Como verificar se funcionou:
 
 1. Acesse: https://github.com/Galdes/pdv-sorv
 2. Verifique se aparece um novo commit recente
 3. Aguarde o deploy automático no Vercel
+4. Consulte `DOCUMENTACAO_SISTEMA.md` para dúvidas
 
 ## ⚠️ Se der erro:
 
@@ -73,35 +70,5 @@ git add . && git commit -m "feat: implementar sistema de intervenção humana no
 
 ---
 
-# 🗄️ Script SQL para Banco de Dados
-
-## **Execute este comando no Supabase:**
-
-```sql
--- Adicionar campo "lida" na tabela mensagens_whatsapp
-ALTER TABLE mensagens_whatsapp 
-ADD COLUMN lida BOOLEAN DEFAULT false;
-
--- Atualizar mensagens existentes para marcar como lidas
-UPDATE mensagens_whatsapp 
-SET lida = true 
-WHERE tipo = 'enviada' OR tipo = 'sistema';
-
--- Manter mensagens recebidas como não lidas
-UPDATE mensagens_whatsapp 
-SET lida = false 
-WHERE tipo = 'recebida';
-```
-
-## **Como executar no Supabase:**
-
-1. Acesse: https://supabase.com/dashboard
-2. Vá no seu projeto
-3. Clique em "SQL Editor"
-4. Cole o script acima
-5. Clique em "Run"
-
----
-
-**Data:** 28/07/2025  
+**Data:** 29/07/2025  
 **Arquivo:** COMANDOS_GIT.md
