@@ -135,7 +135,8 @@ export async function POST(request: NextRequest) {
         conversa_id: conversaId,
         tipo: tipoMensagem,
         conteudo: mensagem.conteudo,
-        timestamp: new Date().toISOString() // Forçar timestamp atual
+        timestamp: new Date().toISOString(), // Forçar timestamp atual
+        lida: tipoMensagem === 'recebida' ? false : true // Mensagens recebidas começam como não lidas
       });
 
     if (errorMensagem) {

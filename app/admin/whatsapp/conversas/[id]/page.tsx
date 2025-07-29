@@ -16,6 +16,7 @@ interface Mensagem {
   tipo: 'recebida' | 'enviada' | 'sistema';
   conteudo: string;
   timestamp: string;
+  lida?: boolean;
 }
 
 interface Conversa {
@@ -78,6 +79,17 @@ export default function ChatPage() {
 
       if (error) throw error;
       setMensagens(data || []);
+      
+      // Marcar mensagens recebidas como lidas
+      if (data && data.length > 0) {
+        const mensagensRecebidas = data.filter(m => m.tipo === 'recebida' && !m.lida);
+        if (mensagensRecebidas.length > 0) {
+          await supabase
+            .from('mensagens_whatsapp')
+            .update({ lida: true })
+            .in('id', mensagensRecebidas.map(m => m.id));
+        }
+      }
     } catch (error) {
       console.error('Erro ao carregar mensagens:', error);
     } finally {
