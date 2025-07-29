@@ -19,44 +19,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Enviando via N8N Webhook...');
+    console.log('Enviando diretamente para Z-API...');
     
-    // URL do webhook N8N (você precisa configurar isso)
-    const n8nWebhookUrl = process.env.N8N_SEND_WEBHOOK_URL || 'https://seu-n8n.com/webhook/send-message';
+    // Configurações Z-API
+    const zapiUrl = 'https://api.z-api.io/instances/3E29A3AF9423B0EA10A44AAAADA6D328/token/7D1DE18113C654C07EA765C7/send-text';
+    const zapiToken = process.env.ZAPI_CLIENT_TOKEN || 'F1a3944af237e41109ba151a729e869e9S';
     
-    console.log('N8N Webhook URL:', n8nWebhookUrl);
-    console.log('Body para N8N:', { numero_cliente, mensagem });
+    console.log('Z-API URL:', zapiUrl);
+    console.log('Z-API Token existe:', !!zapiToken);
+    console.log('Z-API Token (primeiros 10 chars):', zapiToken.substring(0, 10));
 
-    const response = await fetch(n8nWebhookUrl, {
+    // Preparar dados para Z-API
+    const requestBody = {
+      phone: numero_cliente,
+      message: mensagem
+    };
+
+    console.log('Body para Z-API:', requestBody);
+
+    // Enviar mensagem via Z-API
+    const response = await fetch(zapiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Client-Token': zapiToken,
       },
-      body: JSON.stringify({
-        numero_cliente: numero_cliente,
-        mensagem: mensagem,
-        tipo: 'sistema',
-        timestamp: new Date().toISOString()
-      })
+      body: JSON.stringify(requestBody)
     });
 
-    console.log('Resposta N8N status:', response.status);
+    console.log('Resposta Z-API status:', response.status);
+    console.log('Resposta Z-API headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('Erro N8N - Status:', response.status);
-      console.error('Erro N8N - Body:', errorData);
-      throw new Error(`Erro N8N: ${response.status} - ${errorData}`);
+      console.error('Erro Z-API - Status:', response.status);
+      console.error('Erro Z-API - Body:', errorData);
+      throw new Error(`Erro Z-API: ${response.status} - ${errorData}`);
     }
 
     const result = await response.json();
-    console.log('Resposta N8N sucesso:', result);
+    console.log('Resposta Z-API sucesso:', result);
     
     console.log('=== MENSAGEM ENVIADA COM SUCESSO ===');
     
     return NextResponse.json({
       success: true,
-      message: 'Mensagem enviada via N8N',
+      message: 'Mensagem enviada via Z-API',
+      message_id: result.id,
       timestamp: new Date().toISOString()
     });
 
