@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Search, RefreshCw, MessageCircle, User, Phone, Clock } from 'lucide-react';
+import { Search, RefreshCw, MessageCircle, User, Phone, Clock, Trash2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import AdminLayout, { AdminCard, AdminButton } from '../../../components/AdminLayout';
 
@@ -28,6 +28,9 @@ export default function WhatsAppPage() {
   const [conversasAtivas, setConversasAtivas] = useState(0);
   const [aguardando, setAguardando] = useState(0);
   const [totalNaoLidas, setTotalNaoLidas] = useState(0);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [conversaParaExcluir, setConversaParaExcluir] = useState<Conversa | null>(null);
+  const [excluindo, setExcluindo] = useState(false);
 
   useEffect(() => {
     carregarConversas();
@@ -86,6 +89,35 @@ export default function WhatsAppPage() {
       console.error('Erro ao carregar conversas:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const excluirConversa = async () => {
+    if (!conversaParaExcluir) return;
+
+    setExcluindo(true);
+    try {
+      const response = await fetch(`/api/whatsapp/excluir-conversa?id=${conversaParaExcluir.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao excluir conversa');
+      }
+
+      const result = await response.json();
+      console.log('Conversa excluída:', result);
+
+      // Recarregar conversas
+      await carregarConversas();
+    } catch (error) {
+      console.error('Erro ao excluir conversa:', error);
+      alert('Erro ao excluir conversa. Tente novamente.');
+    } finally {
+      setExcluindo(false);
+      setShowDeleteModal(false);
+      setConversaParaExcluir(null);
     }
   };
 
@@ -251,9 +283,9 @@ export default function WhatsAppPage() {
         ) : (
           <div className="space-y-4">
             {conversasFiltradas.map((conversa) => (
-              <Link key={conversa.id} href={`/admin/whatsapp/conversas/${conversa.id}`}>
-                <AdminCard className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <div className="flex items-center justify-between">
+              <AdminCard key={conversa.id} className="hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between">
+                  <Link href={`/admin/whatsapp/conversas/${conversa.id}`} className="flex-1">
                     <div className="flex items-center gap-4">
                       <div className="bg-green-100 dark:bg-green-900 p-3 rounded-2xl shadow-lg">
                         <User className="text-green-600 dark:text-green-400" size={24} />
@@ -286,15 +318,84 @@ export default function WhatsAppPage() {
                         </div>
                       </div>
                     </div>
-                    
+                  </Link>
+                  
+                  <div className="flex items-center gap-2">
                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                       <Clock size={16} />
                       <span>{formatarData(conversa.ultima_interacao)}</span>
                     </div>
+                    
+                    <button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setConversaParaExcluir(conversa);
+                        setShowDeleteModal(true);
+                      }}
+                      className="p-2 hover:bg-red-100 dark:hover:bg-red-900 rounded-lg transition-colors text-red-600 dark:text-red-400"
+                      title="Excluir conversa"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
-                </AdminCard>
-              </Link>
+                </div>
+              </AdminCard>
             ))}
+          </div>
+        )}
+
+        {/* Modal de Confirmação de Exclusão */}
+        {showDeleteModal && conversaParaExcluir && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="bg-red-100 dark:bg-red-900 p-3 rounded-full">
+                  <AlertTriangle className="text-red-600 dark:text-red-400" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Excluir Conversa
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Esta ação não pode ser desfeita
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-gray-700 dark:text-gray-300">
+                  Tem certeza que deseja excluir a conversa com{' '}
+                  <span className="font-semibold">{conversaParaExcluir.nome_cliente || 'este cliente'}</span>?
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Todas as mensagens serão excluídas permanentemente.
+                </p>
+              </div>
+              
+              <div className="flex gap-3">
+                <AdminButton
+                  variant="secondary"
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setConversaParaExcluir(null);
+                  }}
+                  disabled={excluindo}
+                  className="flex-1"
+                >
+                  Cancelar
+                </AdminButton>
+                
+                <AdminButton
+                  variant="danger"
+                  onClick={excluirConversa}
+                  disabled={excluindo}
+                  className="flex-1 flex items-center gap-2"
+                >
+                  <Trash2 size={16} />
+                  {excluindo ? 'Excluindo...' : 'Excluir'}
+                </AdminButton>
+              </div>
+            </div>
           </div>
         )}
       </div>

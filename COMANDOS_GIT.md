@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "feat: adicionar sistema de notificações e ordenação inteligente"
+git commit -m "feat: adicionar funcionalidade de exclusão de conversas WhatsApp"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,10 +18,17 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "feat: adicionar sistema de notificações e ordenação inteligente" && git push origin main
+git add . && git commit -m "feat: adicionar funcionalidade de exclusão de conversas WhatsApp" && git push origin main
 ```
 
 ## 📝 O que será enviado:
+
+✅ **Funcionalidade de Exclusão**
+- Botão de excluir na conversa individual
+- Botão de excluir na lista de conversas
+- Modal de confirmação com aviso de segurança
+- API endpoint para exclusão segura
+- Exclusão automática de mensagens (CASCADE)
 
 ✅ **Sistema de Notificações**
 - Badge de notificações não lidas

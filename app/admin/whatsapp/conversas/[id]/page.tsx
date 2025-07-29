@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Send, User, MessageCircle, Clock, Phone, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Send, User, MessageCircle, Clock, Phone, MoreVertical, Trash2, AlertTriangle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import AdminLayout, { AdminCard, AdminButton } from '../../../../../components/AdminLayout';
 
@@ -37,6 +37,8 @@ export default function ChatPage() {
   const [novaMensagem, setNovaMensagem] = useState('');
   const [loading, setLoading] = useState(true);
   const [enviando, setEnviando] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -149,6 +151,34 @@ export default function ChatPage() {
     }
   };
 
+  const excluirConversa = async () => {
+    if (!conversa) return;
+
+    setExcluindo(true);
+    try {
+      const response = await fetch(`/api/whatsapp/excluir-conversa?id=${conversaId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao excluir conversa');
+      }
+
+      const result = await response.json();
+      console.log('Conversa excluída:', result);
+
+      // Redirecionar para a lista de conversas
+      router.push('/admin/whatsapp');
+    } catch (error) {
+      console.error('Erro ao excluir conversa:', error);
+      alert('Erro ao excluir conversa. Tente novamente.');
+    } finally {
+      setExcluindo(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   const formatarTelefone = (telefone: string) => {
     return telefone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
   };
@@ -238,8 +268,12 @@ export default function ChatPage() {
                 {conversa.status}
               </span>
               
-              <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <MoreVertical size={20} className="text-gray-600 dark:text-gray-300" />
+              <button 
+                onClick={() => setShowDeleteModal(true)}
+                className="p-2 hover:bg-red-100 dark:hover:bg-red-900 rounded-lg transition-colors text-red-600 dark:text-red-400"
+                title="Excluir conversa"
+              >
+                <Trash2 size={20} />
               </button>
             </div>
           </div>
@@ -315,6 +349,58 @@ export default function ChatPage() {
             </div>
           </div>
         </div>
+
+        {/* Modal de Confirmação de Exclusão */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="bg-red-100 dark:bg-red-900 p-3 rounded-full">
+                  <AlertTriangle className="text-red-600 dark:text-red-400" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Excluir Conversa
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Esta ação não pode ser desfeita
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-gray-700 dark:text-gray-300">
+                  Tem certeza que deseja excluir a conversa com{' '}
+                  <span className="font-semibold">{conversa.nome_cliente || 'este cliente'}</span>?
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Todas as mensagens serão excluídas permanentemente.
+                </p>
+              </div>
+              
+              <div className="flex gap-3">
+                <AdminButton
+                  variant="secondary"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={excluindo}
+                  className="flex-1"
+                >
+                  Cancelar
+                </AdminButton>
+                
+                <AdminButton
+                  variant="danger"
+                  onClick={excluirConversa}
+                  disabled={excluindo}
+                  className="flex-1 flex items-center gap-2"
+                >
+                  <Trash2 size={16} />
+                  {excluindo ? 'Excluindo...' : 'Excluir'}
+                </AdminButton>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </AdminLayout>
   );
