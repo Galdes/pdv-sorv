@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "feat: adicionar sistema de notificações para mensagens não lidas"
+git commit -m "feat: adicionar sistema de notificações e ordenação inteligente"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,7 +18,7 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "feat: adicionar sistema de notificações para mensagens não lidas" && git push origin main
+git add . && git commit -m "feat: adicionar sistema de notificações e ordenação inteligente" && git push origin main
 ```
 
 ## 📝 O que será enviado:
@@ -28,6 +28,11 @@ git add . && git commit -m "feat: adicionar sistema de notificações para mensa
 - Contador por conversa
 - Estatísticas gerais
 - Marcação automática como lida
+
+✅ **Ordenação Inteligente**
+- Conversas com mensagens não lidas aparecem primeiro
+- Depois ordenadas por última interação
+- Priorização automática de conversas urgentes
 
 ✅ **Melhorias no Webhook**
 - Campo "lida" nas mensagens
@@ -82,4 +87,4 @@ WHERE tipo = 'recebida';
 ---
 
 **Data:** 28/07/2025  
-**Arquivo:** COMANDOS_GIT.md 
+**Arquivo:** COMANDOS_GIT.md

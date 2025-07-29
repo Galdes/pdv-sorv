@@ -39,32 +39,48 @@ export default function WhatsAppPage() {
 
   const carregarConversas = async () => {
     try {
-      // Buscar conversas com contagem de mensagens não lidas
-      const { data, error } = await supabase
+      // Buscar todas as conversas primeiro
+      const { data: todasConversas, error: errorTodas } = await supabase
         .from('conversas_whatsapp')
-        .select(`
-          *,
-          mensagens_nao_lidas:mensagens_whatsapp(count)
-        `)
-        .eq('mensagens_whatsapp.tipo', 'recebida')
-        .eq('mensagens_whatsapp.lida', false)
+        .select('*')
         .order('ultima_interacao', { ascending: false });
 
-      if (error) throw error;
+      if (errorTodas) throw errorTodas;
 
-      // Processar dados para incluir contagem de não lidas
-      const conversasProcessadas = data?.map(conversa => ({
-        ...conversa,
-        mensagens_nao_lidas: conversa.mensagens_nao_lidas?.[0]?.count || 0
-      })) || [];
+      // Para cada conversa, buscar contagem de mensagens não lidas
+      const conversasProcessadas = await Promise.all(
+        todasConversas?.map(async (conversa) => {
+          const { count: mensagensNaoLidas } = await supabase
+            .from('mensagens_whatsapp')
+            .select('*', { count: 'exact', head: true })
+            .eq('conversa_id', conversa.id)
+            .eq('tipo', 'recebida')
+            .eq('lida', false);
 
-      setConversas(conversasProcessadas);
+          return {
+            ...conversa,
+            mensagens_nao_lidas: mensagensNaoLidas || 0
+          };
+        }) || []
+      );
+
+      // Ordenar: primeiro conversas com mensagens não lidas, depois por última interação
+      const conversasOrdenadas = conversasProcessadas.sort((a, b) => {
+        // Se uma tem mensagens não lidas e a outra não, priorizar a que tem
+        if (a.mensagens_nao_lidas > 0 && b.mensagens_nao_lidas === 0) return -1;
+        if (a.mensagens_nao_lidas === 0 && b.mensagens_nao_lidas > 0) return 1;
+        
+        // Se ambas têm ou não têm mensagens não lidas, ordenar por última interação
+        return new Date(b.ultima_interacao).getTime() - new Date(a.ultima_interacao).getTime();
+      });
+
+      setConversas(conversasOrdenadas);
       
       // Calcular estatísticas
-      setTotalConversas(conversasProcessadas.length);
-      setConversasAtivas(conversasProcessadas.filter(c => c.status === 'ativa').length);
-      setAguardando(conversasProcessadas.filter(c => c.status === 'aguardando').length);
-      setTotalNaoLidas(conversasProcessadas.reduce((total, c) => total + (c.mensagens_nao_lidas || 0), 0));
+      setTotalConversas(conversasOrdenadas.length);
+      setConversasAtivas(conversasOrdenadas.filter(c => c.status === 'ativa').length);
+      setAguardando(conversasOrdenadas.filter(c => c.status === 'aguardando').length);
+      setTotalNaoLidas(conversasOrdenadas.reduce((total, c) => total + (c.mensagens_nao_lidas || 0), 0));
       
     } catch (error) {
       console.error('Erro ao carregar conversas:', error);
