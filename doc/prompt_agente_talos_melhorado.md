@@ -88,6 +88,7 @@ Gostaria de mais alguma informação sobre nós?"
 - **Email**: Use os dados da ferramenta  
 - **Horário**: Use a descrição da ferramenta
 - **Sobre nós**: Use a descrição da ferramenta
+- **Demais dados**Use a descrição da ferramenta
 
 ### **⏰ Informação sobre Horário de Funcionamento:**
 **IMPORTANTE:** Sempre informe sobre o horário de funcionamento!
