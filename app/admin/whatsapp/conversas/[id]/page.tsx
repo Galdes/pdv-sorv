@@ -110,19 +110,7 @@ export default function ChatPage() {
 
     setEnviando(true);
     try {
-      // 1. Salvar mensagem no banco
-      const { error: errorMensagem } = await supabase
-        .from('mensagens_whatsapp')
-        .insert({
-          conversa_id: conversaId,
-          tipo: 'enviada',
-          conteudo: novaMensagem,
-          timestamp: new Date().toISOString()
-        });
-
-      if (errorMensagem) throw errorMensagem;
-
-      // 2. Enviar via Z-API
+      // Enviar via Z-API (N8N salvará a mensagem via webhook)
       const response = await fetch('/api/whatsapp/enviar', {
         method: 'POST',
         headers: {
@@ -138,7 +126,7 @@ export default function ChatPage() {
         throw new Error('Erro ao enviar mensagem');
       }
 
-      // 3. Atualizar conversa
+      // Atualizar conversa
       await supabase
         .from('conversas_whatsapp')
         .update({
