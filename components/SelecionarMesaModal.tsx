@@ -101,7 +101,7 @@ export default function SelecionarMesaModal({
           return {
             ...mesa,
             total_pendente: totalPendente,
-            pedidos_count: temComandaAberta ? Math.max(pedidosNaoPagos.length, 1) : pedidosNaoPagos.length
+            pedidos_count: pedidosNaoPagos.length // Remover a lógica que força 1 se tem comanda aberta
           };
         })
       );
