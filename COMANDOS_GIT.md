@@ -92,8 +92,12 @@ git add . && git commit -m "fix: corrigir lógica de disponibilidade das mesas -
 1. Acesse: https://github.com/Galdes/pdv-sorv
 2. Verifique se aparece um novo commit recente
 3. Aguarde o deploy automático no Vercel
-4. **Execute o script SQL**: `doc/funcoes_pagamento_comandas.sql`
-5. Teste o sistema:
+4. **Execute o script SQL**: `doc/funcoes_disponibilidade_mesas.sql` (mais simples)
+5. **OU execute em partes** se der erro:
+   - Execute apenas as funções de pagamento (linhas 1-230)
+   - Execute as funções de disponibilidade (linhas 231-280)
+   - Execute os triggers e permissões (linhas 281-320)
+6. Teste o sistema:
    - Abra uma comanda em uma mesa
    - Pague todos os pedidos
    - Verifique se a mesa aparece como "Livre"
@@ -105,6 +109,7 @@ git add . && git commit -m "fix: corrigir lógica de disponibilidade das mesas -
 - Certifique-se de que o Git está configurado
 - Tente executar os comandos um por vez
 - **Importante**: Execute o script SQL no Supabase antes de testar
+- **Se der erro de trigger**: Execute primeiro `doc/funcoes_disponibilidade_mesas.sql`
 
 ---
 

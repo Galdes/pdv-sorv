@@ -1,5 +1,10 @@
 -- Funções para processamento de pagamentos e fechamento de comandas
 -- Execute este script no Supabase SQL Editor
+-- 
+-- IMPORTANTE: Se der erro de dependência, execute em partes:
+-- 1. Execute apenas as funções de pagamento (linhas 1-230)
+-- 2. Execute as funções de disponibilidade (linhas 231-280)
+-- 3. Execute os triggers e permissões (linhas 281-320)
 
 -- Função para processar pagamento parcial
 DROP FUNCTION IF EXISTS processar_pagamento_parcial(UUID, DECIMAL, UUID, TEXT);
@@ -322,6 +327,10 @@ END;
 $$;
 
 -- Trigger para verificar e fechar comanda quando pedido é marcado como pago
+-- PRIMEIRO: Remover o trigger existente
+DROP TRIGGER IF EXISTS trigger_verificar_comanda_on_pedidos ON pedidos;
+
+-- SEGUNDO: Recriar a função
 DROP FUNCTION IF EXISTS trigger_verificar_comanda();
 CREATE OR REPLACE FUNCTION trigger_verificar_comanda()
 RETURNS TRIGGER
@@ -337,8 +346,7 @@ BEGIN
 END;
 $$;
 
--- Criar trigger se não existir
-DROP TRIGGER IF EXISTS trigger_verificar_comanda_on_pedidos ON pedidos;
+-- TERCEIRO: Recriar o trigger
 CREATE TRIGGER trigger_verificar_comanda_on_pedidos
   AFTER UPDATE ON pedidos
   FOR EACH ROW
