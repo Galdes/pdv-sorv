@@ -39,12 +39,7 @@ export async function POST(request: NextRequest) {
     console.log('Enviando via N8N (ngrok)...');
     
     // URL do webhook N8N via ngrok
-    const n8nWebhookUrl = 'https://fff4bcf1d092.ngrok-free.app/webhook/send-message';
-    
-    console.log('=== DEBUG VARIÁVEIS DE AMBIENTE ===');
-    console.log('N8N_SEND_WEBHOOK_URL:', process.env.N8N_SEND_WEBHOOK_URL);
-    console.log('URL final sendo usada:', n8nWebhookUrl);
-    console.log('=== FIM DEBUG ===');
+    const n8nWebhookUrl = process.env.N8N_SEND_WEBHOOK_URL || 'https://fff4bcf1d092.ngrok-free.app/webhook/send-message';
     
     console.log('N8N Webhook URL (ngrok):', n8nWebhookUrl);
     console.log('Body para N8N:', { numero_cliente, mensagem });
