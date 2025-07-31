@@ -231,15 +231,16 @@ export async function POST(request: NextRequest) {
     console.log('Verificando mensagem duplicada...');
     const { data: mensagemExistente, error: errorVerificacao } = await supabase
       .from('mensagens_whatsapp')
-      .select('id')
+      .select('id, tipo')
       .eq('conversa_id', conversaId)
       .eq('conteudo', mensagem.conteudo)
-      .eq('tipo', tipoMensagem)
-      .gte('timestamp', new Date(Date.now() - 60000).toISOString()) // Últimos 60 segundos
-      .single();
+      .gte('timestamp', new Date(Date.now() - 120000).toISOString()) // Últimos 2 minutos
+      .order('timestamp', { ascending: false })
+      .limit(1);
 
-    if (mensagemExistente) {
-      console.log('Mensagem duplicada detectada, ignorando...');
+    if (mensagemExistente && mensagemExistente.length > 0) {
+      console.log('Mensagem duplicada detectada:', mensagemExistente[0]);
+      console.log('Ignorando salvamento...');
       return NextResponse.json({
         success: true,
         message: 'Mensagem duplicada ignorada',
