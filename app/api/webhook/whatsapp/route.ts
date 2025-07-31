@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
     console.log('Timestamp:', new Date().toISOString());
     console.log('Headers:', Object.fromEntries(request.headers.entries()));
     console.log('URL:', request.url);
+    console.log('User-Agent:', request.headers.get('user-agent'));
+    console.log('Content-Type:', request.headers.get('content-type'));
     
     // Verificar token de autorização (TEMPORARIAMENTE DESABILITADO PARA TESTE)
     // const authHeader = request.headers.get('authorization');
@@ -42,6 +44,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     console.log('Body completo recebido:', JSON.stringify(body, null, 2));
+    
+    // Identificar origem da chamada
+    const userAgent = request.headers.get('user-agent') || '';
+    const isFromN8N = userAgent.includes('node') || userAgent.includes('n8n');
+    console.log('=== ORIGEM DA CHAMADA ===');
+    console.log('User-Agent:', userAgent);
+    console.log('Vem do N8N:', isFromN8N);
+    console.log('=== FIM ORIGEM ===');
     
     // Extrair dados da estrutura do N8N
     let conversa, mensagem;
