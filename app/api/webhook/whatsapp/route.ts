@@ -79,6 +79,11 @@ export async function POST(request: NextRequest) {
     // Validar dados obrigatórios
     if (!conversa.numero_cliente || !mensagem.conteudo) {
       console.error('Dados obrigatórios faltando:', { conversa, mensagem });
+      console.log('=== BLOQUEANDO CHAMADA COM DADOS VAZIOS ===');
+      console.log('User-Agent:', userAgent);
+      console.log('Vem do N8N:', isFromN8N);
+      console.log('Body:', JSON.stringify(body, null, 2));
+      console.log('=== FIM BLOQUEIO ===');
       return NextResponse.json(
         { error: 'Missing required fields' }, 
         { status: 400 }
