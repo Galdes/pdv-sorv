@@ -47,23 +47,11 @@ export async function POST(request: NextRequest) {
     
     // Identificar origem da chamada
     const userAgent = request.headers.get('user-agent') || '';
-    const isFromN8N = userAgent.includes('node') || userAgent.includes('n8n');
+    const isFromN8N = userAgent.includes('node') || userAgent.includes('n8n') || userAgent.includes('axios');
     console.log('=== ORIGEM DA CHAMADA ===');
     console.log('User-Agent:', userAgent);
     console.log('Vem do N8N:', isFromN8N);
     console.log('=== FIM ORIGEM ===');
-    
-    // Bloquear chamadas que não vêm do N8N
-    if (!isFromN8N) {
-      console.log('=== BLOQUEANDO CHAMADA QUE NÃO VEM DO N8N ===');
-      console.log('User-Agent:', userAgent);
-      console.log('Body:', JSON.stringify(body, null, 2));
-      console.log('=== FIM BLOQUEIO ===');
-      return NextResponse.json(
-        { error: 'Unauthorized - Only N8N calls allowed' }, 
-        { status: 403 }
-      );
-    }
     
     // Extrair dados da estrutura do N8N
     let conversa, mensagem;
