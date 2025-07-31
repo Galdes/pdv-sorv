@@ -388,32 +388,41 @@ export default function ChatPage() {
                 </p>
               </div>
             ) : (
-              mensagens.map((mensagem) => (
-                <div
-                  key={mensagem.id}
-                  className={`flex ${mensagem.tipo === 'recebida' ? 'justify-start' : 'justify-end'}`}
-                >
+              mensagens.map((mensagem) => {
+                console.log('Renderizando mensagem:', {
+                  id: mensagem.id,
+                  tipo: mensagem.tipo,
+                  conteudo: mensagem.conteudo,
+                  timestamp: mensagem.timestamp
+                });
+                
+                return (
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
-                      mensagem.tipo === 'recebida'
-                        ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                        : mensagem.tipo === 'enviada'
-                        ? 'bg-green-600 text-white'
-                        : 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200'
-                    }`}
+                    key={mensagem.id}
+                    className={`flex ${mensagem.tipo === 'recebida' ? 'justify-start' : 'justify-end'}`}
                   >
-                    <div className="text-sm leading-relaxed">{mensagem.conteudo}</div>
-                    <div className={`text-xs mt-2 flex items-center gap-1 ${
-                      mensagem.tipo === 'recebida' 
-                        ? 'text-gray-500 dark:text-gray-400' 
-                        : 'text-green-100'
-                    }`}>
-                      <Clock size={12} />
-                      {formatarHora(mensagem.timestamp)}
+                    <div
+                      className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
+                        mensagem.tipo === 'recebida'
+                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                          : mensagem.tipo === 'enviada'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200'
+                      }`}
+                    >
+                      <div className="text-sm leading-relaxed">{mensagem.conteudo}</div>
+                      <div className={`text-xs mt-2 flex items-center gap-1 ${
+                        mensagem.tipo === 'recebida' 
+                          ? 'text-gray-500 dark:text-gray-400' 
+                          : 'text-green-100'
+                      }`}>
+                        <Clock size={12} />
+                        {formatarHora(mensagem.timestamp)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
             <div ref={messagesEndRef} />
           </div>
