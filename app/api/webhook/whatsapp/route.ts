@@ -243,19 +243,32 @@ export async function POST(request: NextRequest) {
     console.log('Conversa ID:', conversaId);
 
     // 2. Verificar se mensagem já existe (evitar duplicação)
-    console.log('Verificando mensagem duplicada...');
+    console.log('=== VERIFICAÇÃO DE DUPLICAÇÃO ===');
+    console.log('Conteúdo da mensagem:', mensagem.conteudo);
+    console.log('Tipo da mensagem:', tipoMensagem);
+    console.log('Conversa ID:', conversaId);
+    console.log('Timestamp atual:', new Date().toISOString());
+    console.log('Janela de verificação:', new Date(Date.now() - 120000).toISOString());
+    
     const { data: mensagemExistente, error: errorVerificacao } = await supabase
       .from('mensagens_whatsapp')
-      .select('id, tipo')
+      .select('id, tipo, timestamp')
       .eq('conversa_id', conversaId)
       .eq('conteudo', mensagem.conteudo)
       .gte('timestamp', new Date(Date.now() - 120000).toISOString()) // Últimos 2 minutos
       .order('timestamp', { ascending: false })
-      .limit(1);
+      .limit(5); // Aumentar para ver mais mensagens
 
+    console.log('Mensagens encontradas na janela:', mensagemExistente);
+    
     if (mensagemExistente && mensagemExistente.length > 0) {
-      console.log('Mensagem duplicada detectada:', mensagemExistente[0]);
-      console.log('Ignorando salvamento...');
+      console.log('=== DUPLICAÇÃO DETECTADA ===');
+      console.log('Mensagens similares encontradas:');
+      mensagemExistente.forEach((msg, index) => {
+        console.log(`${index + 1}. ID: ${msg.id}, Tipo: ${msg.tipo}, Timestamp: ${msg.timestamp}`);
+      });
+      console.log('Ignorando salvamento da nova mensagem...');
+      console.log('=== FIM DUPLICAÇÃO ===');
       return NextResponse.json({
         success: true,
         message: 'Mensagem duplicada ignorada',
@@ -263,6 +276,9 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString()
       });
     }
+    
+    console.log('Nenhuma duplicação encontrada - salvando mensagem...');
+    console.log('=== FIM VERIFICAÇÃO ===');
 
     // 3. Salvar mensagem
     console.log('Salvando mensagem:', {
