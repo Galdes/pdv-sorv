@@ -27,9 +27,9 @@ export default function AbrirComanda() {
       // Calcular status real das mesas usando a função SQL
       const mesasComStatus = await Promise.all(
         (data || []).map(async (mesa) => {
-          // Usar a função SQL mesa_disponivel para verificar status
+          // Usar a função SQL mesa_disponivel_melhorada para verificar status
           const { data: disponivel, error: errDisponivel } = await supabase
-            .rpc('mesa_disponivel', { p_mesa_id: mesa.id });
+            .rpc('mesa_disponivel_melhorada', { p_mesa_id: mesa.id });
 
           if (errDisponivel) {
             console.error('Erro ao verificar disponibilidade da mesa:', errDisponivel);

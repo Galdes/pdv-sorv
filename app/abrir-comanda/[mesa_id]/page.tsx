@@ -20,9 +20,9 @@ export default function AbrirComandaPage({ params }: { params: Promise<{ mesa_id
 
   const verificarDisponibilidadeMesa = async () => {
     try {
-      // Usar a função SQL mesa_disponivel para verificar status
+      // Usar a função SQL mesa_disponivel_melhorada para verificar status
       const { data: disponivel, error: errDisponivel } = await supabase
-        .rpc('mesa_disponivel', { p_mesa_id: mesa_id });
+        .rpc('mesa_disponivel_melhorada', { p_mesa_id: mesa_id });
 
       if (errDisponivel) throw errDisponivel;
 
@@ -59,7 +59,7 @@ export default function AbrirComandaPage({ params }: { params: Promise<{ mesa_id
     try {
       // Verificar novamente se a mesa ainda está disponível
       const { data: disponivel, error: errDisponivel } = await supabase
-        .rpc('mesa_disponivel', { p_mesa_id: mesa_id });
+        .rpc('mesa_disponivel_melhorada', { p_mesa_id: mesa_id });
 
       if (errDisponivel) throw errDisponivel;
 
