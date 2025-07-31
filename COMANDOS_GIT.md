@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "feat: aplicar layout moderno do delivery ao menu das mesas"
+git commit -m "feat: modernizar layout do resumo da mesa e adicionar informações de pagamento"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,32 +18,38 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "feat: aplicar layout moderno do delivery ao menu das mesas" && git push origin main
+git add . && git commit -m "feat: modernizar layout do resumo da mesa e adicionar informações de pagamento" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Melhoria do Layout do Menu das Mesas**
-- **Problema**: Layout antigo e pouco intuitivo
-- **Solução**: Aplicado layout moderno do delivery
-- **Resultado**: Interface mais moderna e consistente
+✅ **Modernização do Layout do Resumo da Mesa**
+- **Problema**: Layout antigo e pouco informativo
+- **Solução**: Aplicado design moderno com cards e estatísticas
+- **Resultado**: Interface mais clara e profissional
+
+✅ **Adição de Informações de Pagamento**
+- **Novo**: Card dedicado com instruções de pagamento
+- **Conteúdo**: "Para pagar chame um atendente ou se dirija ao caixa"
+- **Dica**: Informação sobre continuar fazendo pedidos
 
 ✅ **Arquivos Modificados:**
-- `app/menu/[mesa_id]/page.tsx` - Layout moderno aplicado
+- `app/resumo/[mesa_id]/page.tsx` - Layout moderno e informações de pagamento
 
 ✅ **Melhorias Implementadas:**
 - **Header Fixo**: Com logo e navegação
-- **Categorias em Abas**: Filtro mais intuitivo
-- **Cards Modernos**: Design consistente com delivery
+- **Cards Modernos**: Design consistente com o sistema
+- **Estatísticas Visuais**: Total de pedidos, pendentes e valor
+- **Status Coloridos**: Indicadores visuais para status dos pedidos
+- **Informações de Pagamento**: Card dedicado com instruções claras
 - **Loading States**: Feedback visual melhorado
 - **Responsividade**: Layout adaptável
-- **UX Melhorada**: Botões e interações mais claras
 
 ✅ **Funcionalidades Mantidas:**
-- Adição de produtos ao pedido
-- Filtros por categoria
-- Navegação para resumo da mesa
+- Filtro entre "meus pedidos" e "todos os pedidos"
+- Navegação para menu
 - Tratamento de erros
+- Exibição de imagens dos produtos
 
 ## 🔍 Como verificar se funcionou:
 
@@ -52,10 +58,11 @@ git add . && git commit -m "feat: aplicar layout moderno do delivery ao menu das
 3. Aguarde o deploy automático no Vercel
 4. Teste o sistema:
    - Abra uma comanda em uma mesa
-   - Acesse o menu digital
-   - Verifique se o layout está moderno e responsivo
-   - Teste os filtros por categoria
-   - Confirme se a navegação funciona
+   - Faça alguns pedidos
+   - Acesse o resumo da mesa
+   - Verifique se o layout está moderno
+   - Confirme se as informações de pagamento aparecem
+   - Teste os filtros e navegação
 
 ## ⚠️ Se der erro:
 
@@ -67,4 +74,4 @@ git add . && git commit -m "feat: aplicar layout moderno do delivery ao menu das
 
 **Data:** 31/07/2025  
 **Arquivo:** COMANDOS_GIT.md  
-**Versão:** 2.3 - Layout Moderno do Menu das Mesas
+**Versão:** 2.4 - Layout Moderno do Resumo da Mesa
