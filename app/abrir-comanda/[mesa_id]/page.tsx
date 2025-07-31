@@ -45,19 +45,13 @@ export default function AbrirComandaPage({ params }: { params: Promise<{ mesa_id
     setError(null);
 
     try {
-      // Verificar novamente se a mesa ainda está disponível
-      const { data: disponivel, error: errDisponivel } = await supabase
-        .rpc('mesa_disponivel_melhorada', { p_mesa_id: mesa_id });
-
-      if (errDisponivel) throw errDisponivel;
-
-      if (!disponivel) {
-        setError('Esta mesa foi ocupada por outro cliente. Por favor, escolha outra mesa.');
+      // Verificar se telefone foi informado
+      if (!form.telefone) {
+        setError('Telefone é obrigatório');
         setLoading(false);
         return;
       }
 
-      // VERIFICAÇÃO DE CAPACIDADE - NOVA LÓGICA
       // 1. Buscar capacidade da mesa
       const { data: mesa, error: errMesa } = await supabase
         .from('mesas')
@@ -67,27 +61,34 @@ export default function AbrirComandaPage({ params }: { params: Promise<{ mesa_id
 
       if (errMesa) throw errMesa;
 
-      // 2. Contar comandas ativas na mesa
+      // 2. Buscar comandas ativas da mesa
       const { data: comandasAtivas, error: errComandas } = await supabase
         .from('comandas')
-        .select('id')
+        .select('cliente_id')
         .eq('mesa_id', mesa_id)
         .eq('status', 'aberta');
 
       if (errComandas) throw errComandas;
 
-      // 3. Verificar se pode receber nova comanda
-      const podeReceber = (comandasAtivas?.length || 0) < mesa.capacidade;
-
-      if (!podeReceber) {
-        setError('Capacidade de comandas atingiu seu limite. Para abrir uma nova comanda, solicite ao atendente que aumente a capacidade da mesa.');
-        setLoading(false);
-        return;
+      // 3. Buscar telefones únicos das comandas ativas
+      const telefonesUnicos = [];
+      for (const comanda of comandasAtivas || []) {
+        const { data: cliente } = await supabase
+          .from('clientes')
+          .select('telefone')
+          .eq('id', comanda.cliente_id)
+          .single();
+        
+        if (cliente?.telefone) {
+          telefonesUnicos.push(cliente.telefone);
+        }
       }
 
-      // Buscar ou criar cliente
-      let clienteId = null;
-      if (form.telefone) {
+      // 4. Verificar se telefone já existe (reutilizar comanda)
+      const telefoneJaExiste = telefonesUnicos.includes(form.telefone);
+      
+      if (telefoneJaExiste) {
+        // Buscar comanda existente do telefone
         const { data: clienteExistente } = await supabase
           .from('clientes')
           .select('id')
@@ -95,24 +96,65 @@ export default function AbrirComandaPage({ params }: { params: Promise<{ mesa_id
           .single();
 
         if (clienteExistente) {
-          clienteId = clienteExistente.id;
-        } else {
-          const { data: novoCliente, error: errCliente } = await supabase
-            .from('clientes')
-            .insert({
-              nome: form.nome || null,
-              telefone: form.telefone,
-              bar_id: (await supabase.from('mesas').select('bar_id').eq('id', mesa_id).single()).data?.bar_id
-            })
+          const { data: comandaExistente } = await supabase
+            .from('comandas')
             .select('id')
+            .eq('cliente_id', clienteExistente.id)
+            .eq('mesa_id', mesa_id)
+            .eq('status', 'aberta')
             .single();
 
-          if (errCliente) throw errCliente;
-          clienteId = novoCliente.id;
+          if (comandaExistente) {
+            // Redirecionar para menu com comanda existente
+            router.push(`/menu/${mesa_id}?comanda_id=${comandaExistente.id}`);
+            return;
+          }
         }
       }
 
-      // Criar comanda
+      // 5. Verificar capacidade (telefones únicos)
+      const telefonesUnicosCount = new Set(telefonesUnicos).size;
+      const podeReceber = telefonesUnicosCount < mesa.capacidade;
+
+      if (!podeReceber) {
+        setError('Capacidade de comandas atingiu seu limite. Para abrir uma nova comanda, solicite ao atendente que aumente a capacidade da mesa.');
+        setLoading(false);
+        return;
+      }
+
+      // 6. Buscar ou criar cliente
+      let clienteId = null;
+      const { data: clienteExistente } = await supabase
+        .from('clientes')
+        .select('id')
+        .eq('telefone', form.telefone)
+        .single();
+
+      if (clienteExistente) {
+        clienteId = clienteExistente.id;
+      } else {
+        // Buscar bar_id da mesa
+        const { data: mesaInfo } = await supabase
+          .from('mesas')
+          .select('bar_id')
+          .eq('id', mesa_id)
+          .single();
+
+        const { data: novoCliente, error: errCliente } = await supabase
+          .from('clientes')
+          .insert({
+            nome: form.nome || null,
+            telefone: form.telefone,
+            bar_id: mesaInfo?.bar_id
+          })
+          .select('id')
+          .single();
+
+        if (errCliente) throw errCliente;
+        clienteId = novoCliente.id;
+      }
+
+      // 7. Criar comanda
       const { data: comanda, error: errComanda } = await supabase
         .from('comandas')
         .insert({
@@ -125,7 +167,7 @@ export default function AbrirComandaPage({ params }: { params: Promise<{ mesa_id
 
       if (errComanda) throw errComanda;
 
-      // Redirecionar para o menu
+      // 8. Redirecionar para o menu
       router.push(`/menu/${mesa_id}?comanda_id=${comanda.id}`);
     } catch (err: any) {
       setError(err.message || 'Erro ao abrir comanda');
