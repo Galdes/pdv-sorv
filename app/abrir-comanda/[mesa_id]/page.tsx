@@ -43,18 +43,6 @@ export default function AbrirComandaPage({ params }: { params: Promise<{ mesa_id
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
-    if (!form.telefone) {
-      setError('Telefone é obrigatório');
-      setLoading(false);
-      return;
-    }
-
-    if (!mesaDisponivel) {
-      setError('Esta mesa não está disponível no momento');
-      setLoading(false);
-      return;
-    }
 
     try {
       // Verificar novamente se a mesa ainda está disponível
@@ -69,41 +57,75 @@ export default function AbrirComandaPage({ params }: { params: Promise<{ mesa_id
         return;
       }
 
-      // 1. Cria cliente (ou busca existente)
-      let { data: cliente, error: errCliente } = await supabase
-        .from('clientes')
-        .select('*')
-        .eq('telefone', form.telefone)
-        .eq('bar_id',
-          // Buscar bar_id da mesa
-          (await supabase.from('mesas').select('bar_id').eq('id', mesa_id).single()).data?.bar_id
-        )
-        .maybeSingle();
-      if (!cliente) {
-        const { data: novoCliente, error: errNovo } = await supabase
-          .from('clientes')
-          .insert({
-            nome: form.nome,
-            telefone: form.telefone,
-            bar_id: (await supabase.from('mesas').select('bar_id').eq('id', mesa_id).single()).data?.bar_id
-          })
-          .select()
-          .single();
-        if (errNovo) throw errNovo;
-        cliente = novoCliente;
+      // VERIFICAÇÃO DE CAPACIDADE - NOVA LÓGICA
+      // 1. Buscar capacidade da mesa
+      const { data: mesa, error: errMesa } = await supabase
+        .from('mesas')
+        .select('capacidade')
+        .eq('id', mesa_id)
+        .single();
+
+      if (errMesa) throw errMesa;
+
+      // 2. Contar comandas ativas na mesa
+      const { data: comandasAtivas, error: errComandas } = await supabase
+        .from('comandas')
+        .select('id')
+        .eq('mesa_id', mesa_id)
+        .eq('status', 'aberta');
+
+      if (errComandas) throw errComandas;
+
+      // 3. Verificar se pode receber nova comanda
+      const podeReceber = (comandasAtivas?.length || 0) < mesa.capacidade;
+
+      if (!podeReceber) {
+        setError('Capacidade de comandas atingiu seu limite. Para abrir uma nova comanda, solicite ao atendente que aumente a capacidade da mesa.');
+        setLoading(false);
+        return;
       }
-      // 2. Cria comanda
+
+      // Buscar ou criar cliente
+      let clienteId = null;
+      if (form.telefone) {
+        const { data: clienteExistente } = await supabase
+          .from('clientes')
+          .select('id')
+          .eq('telefone', form.telefone)
+          .single();
+
+        if (clienteExistente) {
+          clienteId = clienteExistente.id;
+        } else {
+          const { data: novoCliente, error: errCliente } = await supabase
+            .from('clientes')
+            .insert({
+              nome: form.nome || null,
+              telefone: form.telefone,
+              bar_id: (await supabase.from('mesas').select('bar_id').eq('id', mesa_id).single()).data?.bar_id
+            })
+            .select('id')
+            .single();
+
+          if (errCliente) throw errCliente;
+          clienteId = novoCliente.id;
+        }
+      }
+
+      // Criar comanda
       const { data: comanda, error: errComanda } = await supabase
         .from('comandas')
         .insert({
           mesa_id: mesa_id,
-          cliente_id: cliente.id,
+          cliente_id: clienteId,
           status: 'aberta'
         })
-        .select()
+        .select('id')
         .single();
+
       if (errComanda) throw errComanda;
-      // Redireciona para o menu da mesa/comanda
+
+      // Redirecionar para o menu
       router.push(`/menu/${mesa_id}?comanda_id=${comanda.id}`);
     } catch (err: any) {
       setError(err.message || 'Erro ao abrir comanda');

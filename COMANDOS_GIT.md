@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "feat: modernizar layout do resumo da mesa e adicionar informações de pagamento"
+git commit -m "feat: implementar verificação de capacidade das mesas - limite de comandas por mesa"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,38 +18,31 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "feat: modernizar layout do resumo da mesa e adicionar informações de pagamento" && git push origin main
+git add . && git commit -m "feat: implementar verificação de capacidade das mesas - limite de comandas por mesa" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Modernização do Layout do Resumo da Mesa**
-- **Problema**: Layout antigo e pouco informativo
-- **Solução**: Aplicado design moderno com cards e estatísticas
-- **Resultado**: Interface mais clara e profissional
-
-✅ **Adição de Informações de Pagamento**
-- **Novo**: Card dedicado com instruções de pagamento
-- **Conteúdo**: "Para pagar chame um atendente ou se dirija ao caixa"
-- **Dica**: Informação sobre continuar fazendo pedidos
+✅ **Implementação da Verificação de Capacidade das Mesas**
+- **Problema**: Sistema não permitia múltiplas comandas na mesma mesa
+- **Solução**: Capacidade da mesa = limite de comandas simultâneas
+- **Resultado**: Amigos podem abrir comandas na mesma mesa
 
 ✅ **Arquivos Modificados:**
-- `app/resumo/[mesa_id]/page.tsx` - Layout moderno e informações de pagamento
+- `app/abrir-comanda/[mesa_id]/page.tsx` - Verificação de capacidade antes de criar comanda
+- `app/abrir-comanda/page.tsx` - Exibição de informações de capacidade restante
 
-✅ **Melhorias Implementadas:**
-- **Header Fixo**: Com logo e navegação
-- **Cards Modernos**: Design consistente com o sistema
-- **Estatísticas Visuais**: Total de pedidos, pendentes e valor
-- **Status Coloridos**: Indicadores visuais para status dos pedidos
-- **Informações de Pagamento**: Card dedicado com instruções claras
-- **Loading States**: Feedback visual melhorado
-- **Responsividade**: Layout adaptável
+✅ **Funcionalidades Implementadas:**
+- **Verificação de Capacidade**: Antes de criar comanda, verifica se mesa não atingiu limite
+- **Mensagem Clara**: "Capacidade de comandas atingiu seu limite. Para abrir uma nova comanda, solicite ao atendente que aumente a capacidade da mesa."
+- **Informações Visuais**: Mostra comandas ativas e vagas restantes
+- **Lógica Simples**: Usa campo `capacidade` existente sem alterar banco
 
-✅ **Funcionalidades Mantidas:**
-- Filtro entre "meus pedidos" e "todos os pedidos"
-- Navegação para menu
-- Tratamento de erros
-- Exibição de imagens dos produtos
+✅ **Cenários Suportados:**
+- **Múltiplos amigos**: Cada um pode abrir sua comanda na mesma mesa
+- **Limite de Capacidade**: Mesa não aceita mais comandas quando atinge limite
+- **Flexibilidade**: Dono pode ajustar capacidade conforme necessidade
+- **Transparência**: Cliente vê quantas vagas restam na mesa
 
 ## 🔍 Como verificar se funcionou:
 
@@ -58,11 +51,10 @@ git add . && git commit -m "feat: modernizar layout do resumo da mesa e adiciona
 3. Aguarde o deploy automático no Vercel
 4. Teste o sistema:
    - Abra uma comanda em uma mesa
-   - Faça alguns pedidos
-   - Acesse o resumo da mesa
-   - Verifique se o layout está moderno
-   - Confirme se as informações de pagamento aparecem
-   - Teste os filtros e navegação
+   - Tente abrir outra comanda na mesma mesa (deve funcionar)
+   - Continue até atingir a capacidade da mesa
+   - Verifique se aparece mensagem de limite atingido
+   - Confirme se as informações de capacidade são exibidas
 
 ## ⚠️ Se der erro:
 
@@ -74,4 +66,4 @@ git add . && git commit -m "feat: modernizar layout do resumo da mesa e adiciona
 
 **Data:** 31/07/2025  
 **Arquivo:** COMANDOS_GIT.md  
-**Versão:** 2.4 - Layout Moderno do Resumo da Mesa
+**Versão:** 2.5 - Verificação de Capacidade das Mesas

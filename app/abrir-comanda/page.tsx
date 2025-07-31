@@ -39,9 +39,21 @@ export default function AbrirComanda() {
             };
           }
 
+          // Buscar comandas ativas para mostrar informações
+          const { data: comandasAtivas } = await supabase
+            .from('comandas')
+            .select('id')
+            .eq('mesa_id', mesa.id)
+            .eq('status', 'aberta');
+
+          const comandasAtivasCount = comandasAtivas?.length || 0;
+          const capacidadeRestante = mesa.capacidade - comandasAtivasCount;
+
           return {
             ...mesa,
-            status: disponivel ? 'livre' : 'ocupada'
+            status: disponivel ? 'livre' : 'ocupada',
+            comandas_ativas: comandasAtivasCount,
+            capacidade_restante: capacidadeRestante
           };
         })
       );
@@ -134,6 +146,20 @@ export default function AbrirComanda() {
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                     Capacidade: {mesa.capacidade} pessoa{mesa.capacidade !== 1 ? 's' : ''}
                   </p>
+                  
+                  {/* Informações de Capacidade */}
+                  {mesa.comandas_ativas > 0 && (
+                    <div className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex justify-between items-center">
+                        <span>Comandas ativas:</span>
+                        <span className="font-medium">{mesa.comandas_ativas}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Vagas restantes:</span>
+                        <span className="font-medium text-blue-600">{mesa.capacidade_restante}</span>
+                      </div>
+                    </div>
+                  )}
                   
                   {mesa.status === 'ocupada' && (
                     <div className="mb-4">
