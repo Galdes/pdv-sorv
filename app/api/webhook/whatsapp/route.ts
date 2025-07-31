@@ -77,10 +77,18 @@ export async function POST(request: NextRequest) {
 
     // Corrigir o tipo da mensagem se necessário
     let tipoMensagem = mensagem.tipo;
+    console.log('=== DEBUG TIPO MENSAGEM ===');
+    console.log('Tipo original:', mensagem.tipo);
+    console.log('Conteúdo:', mensagem.conteudo);
+    console.log('Timestamp:', mensagem.timestamp);
+    
     if (tipoMensagem === 'sistema') {
       tipoMensagem = 'enviada'; // Mudar para 'enviada' que é aceito pelo banco
       console.log('Tipo "sistema" alterado para "enviada"');
     }
+    
+    console.log('Tipo final:', tipoMensagem);
+    console.log('=== FIM DEBUG TIPO MENSAGEM ===');
 
     // 1. Salvar/atualizar conversa
     console.log('Buscando conversa existente...');
@@ -219,7 +227,28 @@ export async function POST(request: NextRequest) {
 
     console.log('Conversa ID:', conversaId);
 
-    // 2. Salvar mensagem
+    // 2. Verificar se mensagem já existe (evitar duplicação)
+    console.log('Verificando mensagem duplicada...');
+    const { data: mensagemExistente, error: errorVerificacao } = await supabase
+      .from('mensagens_whatsapp')
+      .select('id')
+      .eq('conversa_id', conversaId)
+      .eq('conteudo', mensagem.conteudo)
+      .eq('tipo', tipoMensagem)
+      .gte('timestamp', new Date(Date.now() - 60000).toISOString()) // Últimos 60 segundos
+      .single();
+
+    if (mensagemExistente) {
+      console.log('Mensagem duplicada detectada, ignorando...');
+      return NextResponse.json({
+        success: true,
+        message: 'Mensagem duplicada ignorada',
+        conversa_id: conversaId,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // 3. Salvar mensagem
     console.log('Salvando mensagem:', {
       conversa_id: conversaId,
       tipo: tipoMensagem,
