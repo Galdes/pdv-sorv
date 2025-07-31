@@ -63,7 +63,7 @@ export default function SelecionarMesaModal({
           // Buscar comandas da mesa
           const { data: comandas } = await supabase
             .from('comandas')
-            .select('id')
+            .select('id, status')
             .eq('mesa_id', mesa.id);
 
           if (!comandas || comandas.length === 0) {
@@ -73,6 +73,10 @@ export default function SelecionarMesaModal({
               pedidos_count: 0
             };
           }
+
+          // Verificar se há comandas abertas
+          const comandasAbertas = comandas.filter(c => c.status === 'aberta');
+          const temComandaAberta = comandasAbertas.length > 0;
 
           const comandaIds = comandas.map(c => c.id);
 
@@ -97,7 +101,7 @@ export default function SelecionarMesaModal({
           return {
             ...mesa,
             total_pendente: totalPendente,
-            pedidos_count: pedidosNaoPagos.length
+            pedidos_count: temComandaAberta ? Math.max(pedidosNaoPagos.length, 1) : pedidosNaoPagos.length
           };
         })
       );

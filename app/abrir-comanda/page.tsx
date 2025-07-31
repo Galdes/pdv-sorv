@@ -23,7 +23,30 @@ export default function AbrirComanda() {
         .order('numero');
 
       if (error) throw error;
-      setMesas(data || []);
+      
+      // Calcular status real das mesas usando a função SQL
+      const mesasComStatus = await Promise.all(
+        (data || []).map(async (mesa) => {
+          // Usar a função SQL mesa_disponivel para verificar status
+          const { data: disponivel, error: errDisponivel } = await supabase
+            .rpc('mesa_disponivel', { p_mesa_id: mesa.id });
+
+          if (errDisponivel) {
+            console.error('Erro ao verificar disponibilidade da mesa:', errDisponivel);
+            return {
+              ...mesa,
+              status: 'livre' // Fallback para livre em caso de erro
+            };
+          }
+
+          return {
+            ...mesa,
+            status: disponivel ? 'livre' : 'ocupada'
+          };
+        })
+      );
+
+      setMesas(mesasComStatus || []);
     } catch (error) {
       console.error('Erro ao carregar mesas:', error);
     } finally {

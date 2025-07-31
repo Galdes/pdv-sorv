@@ -20,16 +20,13 @@ export default function AbrirComandaPage({ params }: { params: Promise<{ mesa_id
 
   const verificarDisponibilidadeMesa = async () => {
     try {
-      // Verificar se há comandas abertas na mesa
-      const { data: comandasAbertas, error: errComandas } = await supabase
-        .from('comandas')
-        .select('id')
-        .eq('mesa_id', mesa_id)
-        .eq('status', 'aberta');
+      // Usar a função SQL mesa_disponivel para verificar status
+      const { data: disponivel, error: errDisponivel } = await supabase
+        .rpc('mesa_disponivel', { p_mesa_id: mesa_id });
 
-      if (errComandas) throw errComandas;
+      if (errDisponivel) throw errDisponivel;
 
-      setMesaDisponivel(!comandasAbertas || comandasAbertas.length === 0);
+      setMesaDisponivel(disponivel);
     } catch (err: any) {
       console.error('Erro ao verificar disponibilidade da mesa:', err);
       setMesaDisponivel(false);
@@ -61,15 +58,12 @@ export default function AbrirComandaPage({ params }: { params: Promise<{ mesa_id
 
     try {
       // Verificar novamente se a mesa ainda está disponível
-      const { data: comandasAbertas, error: errComandas } = await supabase
-        .from('comandas')
-        .select('id')
-        .eq('mesa_id', mesa_id)
-        .eq('status', 'aberta');
+      const { data: disponivel, error: errDisponivel } = await supabase
+        .rpc('mesa_disponivel', { p_mesa_id: mesa_id });
 
-      if (errComandas) throw errComandas;
+      if (errDisponivel) throw errDisponivel;
 
-      if (comandasAbertas && comandasAbertas.length > 0) {
+      if (!disponivel) {
         setError('Esta mesa foi ocupada por outro cliente. Por favor, escolha outra mesa.');
         setLoading(false);
         return;
