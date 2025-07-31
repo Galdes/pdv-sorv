@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "fix: corrigir lógica de status das mesas - mesas com pedidos pagos devem aparecer como Livre"
+git commit -m "feat: aplicar layout moderno do delivery ao menu das mesas"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,24 +18,32 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "fix: corrigir lógica de status das mesas - mesas com pedidos pagos devem aparecer como Livre" && git push origin main
+git add . && git commit -m "feat: aplicar layout moderno do delivery ao menu das mesas" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Correção da Lógica de Status das Mesas**
-- **Problema**: Mesas com comanda aberta mas todos os pedidos pagos apareciam como "Ativa"
-- **Causa**: Lógica forçava `pedidos_count = 1` se havia comanda aberta
-- **Solução**: Agora considera apenas pedidos realmente não pagos
-- **Resultado**: Mesas com todos os pedidos pagos aparecem como "Livre"
+✅ **Melhoria do Layout do Menu das Mesas**
+- **Problema**: Layout antigo e pouco intuitivo
+- **Solução**: Aplicado layout moderno do delivery
+- **Resultado**: Interface mais moderna e consistente
 
 ✅ **Arquivos Modificados:**
-- `components/SelecionarMesaModal.tsx` - Corrigida lógica de contagem de pedidos
+- `app/menu/[mesa_id]/page.tsx` - Layout moderno aplicado
 
-✅ **Melhorias Técnicas:**
-- Status das mesas agora reflete corretamente se há pendências
-- Consistência entre sistema de abertura e sistema de pagamento
-- Interface mais clara para o usuário
+✅ **Melhorias Implementadas:**
+- **Header Fixo**: Com logo e navegação
+- **Categorias em Abas**: Filtro mais intuitivo
+- **Cards Modernos**: Design consistente com delivery
+- **Loading States**: Feedback visual melhorado
+- **Responsividade**: Layout adaptável
+- **UX Melhorada**: Botões e interações mais claras
+
+✅ **Funcionalidades Mantidas:**
+- Adição de produtos ao pedido
+- Filtros por categoria
+- Navegação para resumo da mesa
+- Tratamento de erros
 
 ## 🔍 Como verificar se funcionou:
 
@@ -44,9 +52,10 @@ git add . && git commit -m "fix: corrigir lógica de status das mesas - mesas co
 3. Aguarde o deploy automático no Vercel
 4. Teste o sistema:
    - Abra uma comanda em uma mesa
-   - Pague todos os pedidos
-   - Verifique se a mesa aparece como "Livre" no sistema de pagamento
-   - Confirme que não há mais inconsistências
+   - Acesse o menu digital
+   - Verifique se o layout está moderno e responsivo
+   - Teste os filtros por categoria
+   - Confirme se a navegação funciona
 
 ## ⚠️ Se der erro:
 
@@ -58,4 +67,4 @@ git add . && git commit -m "fix: corrigir lógica de status das mesas - mesas co
 
 **Data:** 31/07/2025  
 **Arquivo:** COMANDOS_GIT.md  
-**Versão:** 2.2 - Correção Lógica de Status das Mesas
+**Versão:** 2.3 - Layout Moderno do Menu das Mesas
