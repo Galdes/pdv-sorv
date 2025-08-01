@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('N8N Webhook URL (ngrok):', n8nWebhookUrl);
-    console.log('Body para N8N:', { numero_cliente, mensagem });
+         console.log('Body para N8N:', { numero_cliente, mensagem, origem: 'sistema' });
 
     const response = await fetch(n8nWebhookUrl, {
       method: 'POST',
@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         numero_cliente: numero_cliente,
-        mensagem: mensagem
+        mensagem: mensagem,
+        origem: 'sistema'
       })
     });
 
