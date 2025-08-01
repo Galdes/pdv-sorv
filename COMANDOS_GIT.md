@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "fix: adicionar logs para investigar erro ao liberar conversa"
+git commit -m "fix: adicionar logs para investigar se webhook recebe mensagens do WhatsApp"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,31 +18,31 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "fix: adicionar logs para investigar erro ao liberar conversa" && git push origin main
+git add . && git commit -m "fix: adicionar logs para investigar se webhook recebe mensagens do WhatsApp" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Investigação do Erro ao Liberar Conversa**
-- **Problema**: Erro 400 ao tentar liberar conversa (voltar para bot)
-- **Causa**: Possível problema na verificação do modo de atendimento
-- **Solução**: Logs detalhados para identificar o problema específico
-- **Resultado**: Identificação precisa do erro
+✅ **Investigação de Mensagens do WhatsApp**
+- **Problema**: Após liberar conversa, não recebe mensagens do WhatsApp
+- **Causa**: Possível problema no N8N ou no webhook
+- **Solução**: Logs detalhados para verificar se mensagens chegam
+- **Resultado**: Identificação se problema está no N8N ou no sistema
 
 ✅ **Arquivos Modificados:**
-- `app/api/whatsapp/assumir-conversa/route.ts` - Logs detalhados de debug
+- `app/api/webhook/whatsapp/route.ts` - Logs detalhados de mensagens recebidas
 
 ✅ **Funcionalidades Implementadas:**
-- **Logs de Liberação**: Verificação detalhada do processo de liberação
-- **Logs de Modo**: Identificação do modo atual da conversa
-- **Logs de Validação**: Verificação de qual validação está falhando
-- **Debug Completo**: Rastreamento completo da lógica
+- **Logs de Mensagens**: Verificação se mensagens chegam ao webhook
+- **Logs de Tipo**: Identificação do tipo de mensagem recebida
+- **Logs de Conteúdo**: Verificação do conteúdo da mensagem
+- **Debug Completo**: Rastreamento completo do fluxo
 
 ✅ **Cenários Investigados:**
-- **Modo Atual**: Qual o modo atual da conversa
-- **Validação**: Qual validação está causando o erro 400
-- **Dados Enviados**: Se os dados estão corretos
-- **Erro Específico**: Identificação precisa do problema
+- **Mensagens Chegam**: Se o webhook está recebendo mensagens
+- **Tipo Correto**: Se o tipo da mensagem está correto
+- **Conteúdo Válido**: Se o conteúdo está sendo processado
+- **N8N Funciona**: Se o problema está no N8N ou no sistema
 
 ## 🔍 Como verificar se funcionou:
 
@@ -50,9 +50,9 @@ git add . && git commit -m "fix: adicionar logs para investigar erro ao liberar 
 2. Verifique se aparece um novo commit recente
 3. Aguarde o deploy automático no Vercel
 4. Teste o sistema:
-   - Tente liberar uma conversa
-   - Verifique os logs do Vercel para ver o erro específico
-   - Identifique qual validação está falhando
+   - Envie uma mensagem do WhatsApp
+   - Verifique os logs do Vercel para ver se a mensagem chegou
+   - Identifique se o problema está no N8N ou no sistema
 
 ## ⚠️ Se der erro:
 
@@ -64,4 +64,4 @@ git add . && git commit -m "fix: adicionar logs para investigar erro ao liberar 
 
 **Data:** 31/07/2025  
 **Arquivo:** COMANDOS_GIT.md  
-**Versão:** 2.12 - Investigação Erro Liberar Conversa
+**Versão:** 2.13 - Investigação Mensagens WhatsApp

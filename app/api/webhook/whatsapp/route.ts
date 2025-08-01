@@ -133,6 +133,8 @@ export async function POST(request: NextRequest) {
       console.log('Agora:', agora.toISOString());
       console.log('Bloqueio expirado:', bloqueioExpirado);
       console.log('Deve bloquear processamento:', conversaExistente.modo_atendimento === 'humano' && !bloqueioExpirado);
+      console.log('Tipo da mensagem recebida:', tipoMensagem);
+      console.log('Conteúdo da mensagem:', mensagem.conteudo);
       console.log('=== FIM VERIFICAÇÃO ===');
       
       if (conversaExistente.modo_atendimento === 'humano' && !bloqueioExpirado) {
