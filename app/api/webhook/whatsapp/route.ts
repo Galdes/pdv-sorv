@@ -108,19 +108,10 @@ export async function POST(request: NextRequest) {
     console.log('Timestamp:', mensagem.timestamp);
     console.log('Vem do N8N:', isFromN8N);
     
-    // Se vem do N8N e o tipo é "sistema", verificar se é mensagem recebida
+    // Se vem do N8N e o tipo é "sistema", é sempre mensagem do usuário
     if (isFromN8N && tipoMensagem === 'sistema') {
-      // Verificar se é uma resposta do bot baseado no conteúdo
-      const isRespostaBot = mensagem.conteudo && (
-        mensagem.conteudo.includes('🍦') || 
-        mensagem.conteudo.includes('✨') || 
-        mensagem.conteudo.includes('😊') ||
-        mensagem.conteudo.includes('Claro!') ||
-        mensagem.conteudo.includes('Estamos localizados') ||
-        mensagem.conteudo.includes('Como posso ajudar')
-      );
-      tipoMensagem = isRespostaBot ? 'enviada' : 'recebida';
-      console.log('Tipo "sistema" do N8N alterado para:', tipoMensagem, isRespostaBot ? '(resposta do bot)' : '(mensagem do usuário)');
+      tipoMensagem = 'recebida'; // N8N envia mensagens do usuário
+      console.log('Tipo "sistema" do N8N alterado para "recebida" (mensagem do usuário)');
     } else if (tipoMensagem === 'sistema') {
       tipoMensagem = 'enviada'; // Mudar para 'enviada' que é aceito pelo banco
       console.log('Tipo "sistema" alterado para "enviada"');
