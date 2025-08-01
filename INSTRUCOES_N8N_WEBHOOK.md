@@ -133,3 +133,51 @@ Copie essa URL e configure no Vercel.
 
 **Data:** 29/07/2025  
 **Arquivo:** INSTRUCOES_N8N_WEBHOOK.md
+
+---
+
+# 🔧 CONFIGURAÇÃO DO FLUXO 2: RECEBER MENSAGENS DO WHATSAPP
+
+## 📋 Configuração do Node "Salva Mensagens Recebidas"
+
+### **PROBLEMA IDENTIFICADO:**
+O node "Salva Mensagens Recebidas" está salvando mensagens do WhatsApp com `tipo: "enviada"` quando deveria ser `tipo: "recebida"`.
+
+### **SOLUÇÃO:**
+
+**Configure o node "Salva Mensagens Recebidas" com:**
+
+```json
+{
+  "conversa": {
+    "numero_cliente": "{{ $json.numero_cliente }}",
+    "nome_cliente": "Cliente",
+    "status": "ativa",
+    "ultima_interacao": "{{ $now }}"
+  },
+  "mensagem": {
+    "tipo": "recebida",
+    "conteudo": "{{ $json.mensagem }}",
+    "timestamp": "{{ $now }}"
+  }
+}
+```
+
+### **DIFERENÇA CRÍTICA:**
+
+- **Fluxo 1 (Envio)**: `"tipo": "enviada"` ✅
+- **Fluxo 2 (Recebimento)**: `"tipo": "recebida"` ✅
+
+### **RESULTADO ESPERADO:**
+
+Após a correção:
+- ✅ Mensagens do usuário aparecem na **esquerda** (cinza)
+- ✅ Mensagens do sistema aparecem na **direita** (verde)
+- ✅ Bot responde corretamente
+- ✅ Modo humano funciona adequadamente
+
+---
+
+**Data:** 01/08/2025  
+**Arquivo:** INSTRUCOES_N8N_WEBHOOK.md  
+**Versão:** 2.0 - Adicionado Fluxo 2

@@ -102,8 +102,15 @@ export async function POST(request: NextRequest) {
     console.log('Tipo original:', mensagem.tipo);
     console.log('Conteúdo:', mensagem.conteudo);
     console.log('Timestamp:', mensagem.timestamp);
+    console.log('Vem do N8N:', isFromN8N);
     
-    if (tipoMensagem === 'sistema') {
+    // Se vem do N8N e o tipo é "sistema", verificar se é mensagem recebida
+    if (isFromN8N && tipoMensagem === 'sistema') {
+      // Verificar se é uma mensagem recebida baseado no conteúdo ou estrutura
+      const isMensagemRecebida = mensagem.conteudo && !mensagem.conteudo.includes('[Sistema]');
+      tipoMensagem = isMensagemRecebida ? 'recebida' : 'enviada';
+      console.log('Tipo "sistema" do N8N alterado para:', tipoMensagem);
+    } else if (tipoMensagem === 'sistema') {
       tipoMensagem = 'enviada'; // Mudar para 'enviada' que é aceito pelo banco
       console.log('Tipo "sistema" alterado para "enviada"');
     }
