@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     console.log('Dados extraídos:', { conversa, mensagem });
     
     // Validar dados obrigatórios
-    if (!conversa.numero_cliente || !mensagem.conteudo) {
+    if (!conversa.numero_cliente) {
       console.error('Dados obrigatórios faltando:', { conversa, mensagem });
       console.log('=== BLOQUEANDO CHAMADA COM DADOS VAZIOS ===');
       console.log('User-Agent:', userAgent);
@@ -88,6 +88,12 @@ export async function POST(request: NextRequest) {
         { error: 'Missing required fields' }, 
         { status: 400 }
       );
+    }
+    
+    // Se o conteúdo estiver vazio, usar um placeholder
+    if (!mensagem.conteudo || mensagem.conteudo.trim() === '') {
+      console.log('Conteúdo vazio detectado, usando placeholder');
+      mensagem.conteudo = '[Mensagem sem conteúdo]';
     }
 
     // Corrigir o tipo da mensagem se necessário

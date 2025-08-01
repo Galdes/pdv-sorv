@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "fix: adicionar logs para investigar se webhook recebe mensagens do WhatsApp"
+git commit -m "fix: aceitar mensagens com conteúdo vazio do N8N"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,31 +18,31 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "fix: adicionar logs para investigar se webhook recebe mensagens do WhatsApp" && git push origin main
+git add . && git commit -m "fix: aceitar mensagens com conteúdo vazio do N8N" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Investigação de Mensagens do WhatsApp**
-- **Problema**: Após liberar conversa, não recebe mensagens do WhatsApp
-- **Causa**: Possível problema no N8N ou no webhook
-- **Solução**: Logs detalhados para verificar se mensagens chegam
-- **Resultado**: Identificação se problema está no N8N ou no sistema
+✅ **Correção para Mensagens Vazias do N8N**
+- **Problema**: N8N envia mensagens com conteúdo vazio e sistema bloqueia
+- **Causa**: Validação muito rigorosa rejeita mensagens sem conteúdo
+- **Solução**: Aceitar mensagens vazias e usar placeholder
+- **Resultado**: Sistema funciona mesmo com dados incompletos do N8N
 
 ✅ **Arquivos Modificados:**
-- `app/api/webhook/whatsapp/route.ts` - Logs detalhados de mensagens recebidas
+- `app/api/webhook/whatsapp/route.ts` - Validação mais flexível
 
 ✅ **Funcionalidades Implementadas:**
-- **Logs de Mensagens**: Verificação se mensagens chegam ao webhook
-- **Logs de Tipo**: Identificação do tipo de mensagem recebida
-- **Logs de Conteúdo**: Verificação do conteúdo da mensagem
-- **Debug Completo**: Rastreamento completo do fluxo
+- **Validação Flexível**: Aceita mensagens com conteúdo vazio
+- **Placeholder**: Usa texto padrão para mensagens vazias
+- **Número Obrigatório**: Mantém validação do número do cliente
+- **Logs Detalhados**: Rastreamento de mensagens vazias
 
-✅ **Cenários Investigados:**
-- **Mensagens Chegam**: Se o webhook está recebendo mensagens
-- **Tipo Correto**: Se o tipo da mensagem está correto
-- **Conteúdo Válido**: Se o conteúdo está sendo processado
-- **N8N Funciona**: Se o problema está no N8N ou no sistema
+✅ **Cenários Resolvidos:**
+- **Mensagens Vazias**: N8N pode enviar mensagens sem conteúdo
+- **Sistema Funciona**: Não bloqueia mais chamadas válidas
+- **Dados Mínimos**: Apenas número do cliente é obrigatório
+- **Compatibilidade**: Funciona com diferentes configurações do N8N
 
 ## 🔍 Como verificar se funcionou:
 
@@ -51,8 +51,8 @@ git add . && git commit -m "fix: adicionar logs para investigar se webhook receb
 3. Aguarde o deploy automático no Vercel
 4. Teste o sistema:
    - Envie uma mensagem do WhatsApp
-   - Verifique os logs do Vercel para ver se a mensagem chegou
-   - Identifique se o problema está no N8N ou no sistema
+   - Verifique se não há mais erros 400
+   - Confirme que o sistema funciona consistentemente
 
 ## ⚠️ Se der erro:
 
@@ -64,4 +64,4 @@ git add . && git commit -m "fix: adicionar logs para investigar se webhook receb
 
 **Data:** 31/07/2025  
 **Arquivo:** COMANDOS_GIT.md  
-**Versão:** 2.13 - Investigação Mensagens WhatsApp
+**Versão:** 2.14 - Correção Mensagens Vazias N8N
