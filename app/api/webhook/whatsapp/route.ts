@@ -136,8 +136,9 @@ export async function POST(request: NextRequest) {
       console.log('=== FIM VERIFICAÇÃO ===');
       
       if (conversaExistente.modo_atendimento === 'humano' && !bloqueioExpirado) {
-        console.log('Conversa em modo humano - bloqueando processamento');
-        // Atualizar conversa mas não processar nem salvar mensagem
+        console.log('Conversa em modo humano - verificando tipo de mensagem');
+        
+        // Atualizar conversa
         const { data: conversaAtualizada, error: errorConversa } = await supabase
           .from('conversas_whatsapp')
           .update({
@@ -156,14 +157,43 @@ export async function POST(request: NextRequest) {
         }
         conversaId = conversaAtualizada.id;
         
-        console.log('Mensagem ignorada em modo humano - nem salva nem processa');
-        return NextResponse.json({
-          success: true,
-          message: 'Mensagem ignorada em modo humano',
-          conversa_id: conversaId,
-          modo: 'humano',
-          timestamp: new Date().toISOString()
-        });
+        // Se for mensagem enviada pelo sistema, salvar mas não processar
+        if (tipoMensagem === 'enviada') {
+          console.log('Mensagem enviada pelo sistema em modo humano - salvando mas não processando');
+          
+          const { error: errorMensagem } = await supabase
+            .from('mensagens_whatsapp')
+            .insert({
+              conversa_id: conversaId,
+              tipo: tipoMensagem,
+              conteudo: mensagem.conteudo,
+              timestamp: new Date().toISOString(),
+              lida: true
+            });
+
+          if (errorMensagem) {
+            console.error('Erro ao salvar mensagem:', errorMensagem);
+            throw errorMensagem;
+          }
+
+          return NextResponse.json({
+            success: true,
+            message: 'Mensagem enviada salva em modo humano',
+            conversa_id: conversaId,
+            modo: 'humano',
+            timestamp: new Date().toISOString()
+          });
+        } else {
+          // Se for mensagem recebida, ignorar completamente
+          console.log('Mensagem recebida em modo humano - ignorando completamente');
+          return NextResponse.json({
+            success: true,
+            message: 'Mensagem recebida ignorada em modo humano',
+            conversa_id: conversaId,
+            modo: 'humano',
+            timestamp: new Date().toISOString()
+          });
+        }
       } else if (bloqueioExpirado) {
         console.log('Bloqueio expirado - voltando para modo bot');
         // Liberar conversa automaticamente

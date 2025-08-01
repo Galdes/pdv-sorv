@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "fix: adicionar logs para investigar erro 400 no assumir-conversa"
+git commit -m "fix: ajustar lógica modo humano - salvar mensagens enviadas pelo sistema"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,31 +18,31 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "fix: adicionar logs para investigar erro 400 no assumir-conversa" && git push origin main
+git add . && git commit -m "fix: ajustar lógica modo humano - salvar mensagens enviadas pelo sistema" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Investigação do Erro 400 no Assumir/Liberar Conversa**
-- **Problema**: Erro 400 ao tentar liberar conversa (botão "Liberar")
-- **Causa**: Possível problema na verificação do modo de atendimento
-- **Solução**: Logs detalhados para identificar o problema
-- **Resultado**: Identificação precisa do erro
+✅ **Ajuste da Lógica em Modo Humano**
+- **Problema**: Mensagens enviadas pelo sistema não aparecem no chat
+- **Causa**: Lógica bloqueava todas as mensagens em modo humano
+- **Solução**: Salvar mensagens enviadas, ignorar apenas mensagens recebidas
+- **Resultado**: Mensagens do atendente aparecem, bot não responde
 
 ✅ **Arquivos Modificados:**
-- `app/api/whatsapp/assumir-conversa/route.ts` - Logs detalhados de debug
+- `app/api/webhook/whatsapp/route.ts` - Lógica de modo humano refinada
 
 ✅ **Funcionalidades Implementadas:**
-- **Logs de Body**: Verificação completa dos dados enviados
-- **Logs de Conversa**: Identificação do estado atual da conversa
-- **Logs de Modo**: Verificação do modo de atendimento
-- **Debug Completo**: Rastreamento completo da lógica
+- **Mensagens Enviadas**: Salvas mesmo em modo humano
+- **Mensagens Recebidas**: Ignoradas em modo humano
+- **Bot Bloqueado**: Não processa mensagens recebidas
+- **Atendente Ativo**: Pode enviar mensagens normalmente
 
-✅ **Cenários Investigados:**
-- **Dados Enviados**: Se o body está correto
-- **Conversa Existente**: Se a conversa é encontrada
-- **Modo Atual**: Qual o modo atual da conversa
-- **Erro Específico**: Qual validação está falhando
+✅ **Cenários Resolvidos:**
+- **Atendente Envia**: Mensagem aparece no chat
+- **Cliente Envia**: Mensagem não é processada pelo bot
+- **Sem Duplicação**: Mensagens não aparecem duplicadas
+- **Funcionalidade Completa**: Sistema funciona corretamente
 
 ## 🔍 Como verificar se funcionou:
 
@@ -50,9 +50,10 @@ git add . && git commit -m "fix: adicionar logs para investigar erro 400 no assu
 2. Verifique se aparece um novo commit recente
 3. Aguarde o deploy automático no Vercel
 4. Teste o sistema:
-   - Tente liberar uma conversa
-   - Verifique os logs do Vercel para ver o erro específico
-   - Identifique qual validação está falhando
+   - Assuma uma conversa como atendente
+   - Envie uma mensagem pelo sistema
+   - Confirme que a mensagem aparece no chat
+   - Verifique que o bot não responde
 
 ## ⚠️ Se der erro:
 
@@ -64,4 +65,4 @@ git add . && git commit -m "fix: adicionar logs para investigar erro 400 no assu
 
 **Data:** 31/07/2025  
 **Arquivo:** COMANDOS_GIT.md  
-**Versão:** 2.10 - Investigação Erro 400 Assumir Conversa
+**Versão:** 2.11 - Ajuste Lógica Modo Humano
