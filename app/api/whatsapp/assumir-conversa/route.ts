@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     console.log('Ação:', acao);
     console.log('Atendente:', atendente_nome);
     console.log('Timestamp:', new Date().toISOString());
+    console.log('Body completo:', JSON.stringify(body, null, 2));
 
     // Verificar se a conversa existe
     const { data: conversa, error: errorBusca } = await supabase
@@ -25,6 +26,12 @@ export async function POST(request: NextRequest) {
       .select('id, modo_atendimento, atendente_nome')
       .eq('id', conversa_id)
       .single();
+
+    console.log('=== DADOS DA CONVERSA ===');
+    console.log('Conversa encontrada:', conversa);
+    console.log('Erro na busca:', errorBusca);
+    console.log('Modo atual:', conversa?.modo_atendimento);
+    console.log('=== FIM DADOS ===');
 
     if (errorBusca || !conversa) {
       console.error('Conversa não encontrada:', conversa_id);

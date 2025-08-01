@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "fix: resolver duplicação em modo humano - não salvar mensagem"
+git commit -m "fix: adicionar logs para investigar erro 400 no assumir-conversa"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,31 +18,31 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "fix: resolver duplicação em modo humano - não salvar mensagem" && git push origin main
+git add . && git commit -m "fix: adicionar logs para investigar erro 400 no assumir-conversa" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Correção da Duplicação em Modo Humano**
-- **Problema**: Bot parou de responder mas voltou a duplicar mensagens
-- **Causa**: Em modo humano, webhook salvava mensagem mas não processava
-- **Solução**: Em modo humano, nem salvar nem processar mensagem
-- **Resultado**: Sem duplicação e bot bloqueado corretamente
+✅ **Investigação do Erro 400 no Assumir/Liberar Conversa**
+- **Problema**: Erro 400 ao tentar liberar conversa (botão "Liberar")
+- **Causa**: Possível problema na verificação do modo de atendimento
+- **Solução**: Logs detalhados para identificar o problema
+- **Resultado**: Identificação precisa do erro
 
 ✅ **Arquivos Modificados:**
-- `app/api/webhook/whatsapp/route.ts` - Lógica de modo humano ajustada
+- `app/api/whatsapp/assumir-conversa/route.ts` - Logs detalhados de debug
 
 ✅ **Funcionalidades Implementadas:**
-- **Modo Humano**: Não salva nem processa mensagens
-- **Bloqueio Total**: Bot completamente desabilitado em modo humano
-- **Sem Duplicação**: Mensagens não são salvas quando atendente assumiu
-- **Logs Detalhados**: Rastreamento completo da lógica
+- **Logs de Body**: Verificação completa dos dados enviados
+- **Logs de Conversa**: Identificação do estado atual da conversa
+- **Logs de Modo**: Verificação do modo de atendimento
+- **Debug Completo**: Rastreamento completo da lógica
 
-✅ **Cenários Resolvidos:**
-- **Bot Bloqueado**: Não responde quando atendente assumiu
-- **Sem Duplicação**: Mensagens não aparecem duplicadas
-- **Modo Humano**: Funciona corretamente para atendente
-- **Performance**: Menos processamento desnecessário
+✅ **Cenários Investigados:**
+- **Dados Enviados**: Se o body está correto
+- **Conversa Existente**: Se a conversa é encontrada
+- **Modo Atual**: Qual o modo atual da conversa
+- **Erro Específico**: Qual validação está falhando
 
 ## 🔍 Como verificar se funcionou:
 
@@ -50,10 +50,9 @@ git add . && git commit -m "fix: resolver duplicação em modo humano - não sal
 2. Verifique se aparece um novo commit recente
 3. Aguarde o deploy automático no Vercel
 4. Teste o sistema:
-   - Assuma uma conversa como atendente
-   - Envie uma mensagem do cliente
-   - Confirme que não há duplicação
-   - Verifique que o bot não responde
+   - Tente liberar uma conversa
+   - Verifique os logs do Vercel para ver o erro específico
+   - Identifique qual validação está falhando
 
 ## ⚠️ Se der erro:
 
@@ -65,4 +64,4 @@ git add . && git commit -m "fix: resolver duplicação em modo humano - não sal
 
 **Data:** 31/07/2025  
 **Arquivo:** COMANDOS_GIT.md  
-**Versão:** 2.9 - Correção Duplicação em Modo Humano
+**Versão:** 2.10 - Investigação Erro 400 Assumir Conversa
