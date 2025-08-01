@@ -90,10 +90,14 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Se o conteúdo estiver vazio, usar um placeholder
+    // Se o conteúdo estiver vazio, ignorar a mensagem
     if (!mensagem.conteudo || mensagem.conteudo.trim() === '') {
-      console.log('Conteúdo vazio detectado, usando placeholder');
-      mensagem.conteudo = '[Mensagem sem conteúdo]';
+      console.log('Conteúdo vazio detectado, ignorando mensagem');
+      return NextResponse.json({
+        success: true,
+        message: 'Mensagem vazia ignorada',
+        timestamp: new Date().toISOString()
+      });
     }
 
     // Corrigir o tipo da mensagem se necessário
