@@ -248,25 +248,23 @@ export async function POST(request: NextRequest) {
     console.log('Tipo da mensagem:', tipoMensagem);
     console.log('Conversa ID:', conversaId);
     console.log('Timestamp atual:', new Date().toISOString());
-    console.log('Janela de verificação:', new Date(Date.now() - 120000).toISOString());
+    console.log('Janela de verificação:', new Date(Date.now() - 30000).toISOString());
     
+    // Verificar se a mesma mensagem (mesmo conteúdo) já foi salva nos últimos 30 segundos
     const { data: mensagemExistente, error: errorVerificacao } = await supabase
       .from('mensagens_whatsapp')
       .select('id, tipo, timestamp')
       .eq('conversa_id', conversaId)
       .eq('conteudo', mensagem.conteudo)
-      .gte('timestamp', new Date(Date.now() - 120000).toISOString()) // Últimos 2 minutos
+      .gte('timestamp', new Date(Date.now() - 30000).toISOString()) // Últimos 30 segundos
       .order('timestamp', { ascending: false })
-      .limit(5); // Aumentar para ver mais mensagens
+      .limit(1);
 
     console.log('Mensagens encontradas na janela:', mensagemExistente);
     
     if (mensagemExistente && mensagemExistente.length > 0) {
-      console.log('=== DUPLICAÇÃO DETECTADA ===');
-      console.log('Mensagens similares encontradas:');
-      mensagemExistente.forEach((msg, index) => {
-        console.log(`${index + 1}. ID: ${msg.id}, Tipo: ${msg.tipo}, Timestamp: ${msg.timestamp}`);
-      });
+      console.log('=== DUPLICAÇÃO POR CONTEÚDO DETECTADA ===');
+      console.log('Mensagem com mesmo conteúdo já salva:', mensagemExistente[0]);
       console.log('Ignorando salvamento da nova mensagem...');
       console.log('=== FIM DUPLICAÇÃO ===');
       return NextResponse.json({

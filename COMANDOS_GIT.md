@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "feat: implementar verificação por telefones únicos - reutilização de comandas"
+git commit -m "fix: resolver duplicação de mensagens WhatsApp - verificação por conteúdo"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,30 +18,31 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "feat: implementar verificação por telefones únicos - reutilização de comandas" && git push origin main
+git add . && git commit -m "fix: resolver duplicação de mensagens WhatsApp - verificação por conteúdo" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Implementação da Verificação por Telefones Únicos**
-- **Problema**: Sistema não permitia múltiplas comandas e perdia comandas ao fechar navegador
-- **Solução**: Verificação por telefones únicos + reutilização de comandas existentes
-- **Resultado**: Amigos podem abrir comandas e clientes recuperam comandas perdidas
+✅ **Correção da Duplicação de Mensagens WhatsApp**
+- **Problema**: Mensagens apareciam duplicadas (enviada + recebida) no chat
+- **Causa**: N8N enviando múltiplas chamadas ao webhook com mesmo conteúdo
+- **Solução**: Verificação de duplicação por conteúdo nos últimos 30 segundos
+- **Resultado**: Cada mensagem aparece apenas uma vez no chat
 
 ✅ **Arquivos Modificados:**
-- `app/abrir-comanda/[mesa_id]/page.tsx` - Nova lógica de verificação por telefones únicos
+- `app/api/webhook/whatsapp/route.ts` - Nova lógica de verificação de duplicação
 
 ✅ **Funcionalidades Implementadas:**
-- **Verificação por Telefones**: Capacidade da mesa = máximo de telefones únicos
-- **Reutilização de Comandas**: Mesmo telefone reutiliza comanda existente
-- **Recuperação de Comandas**: Cliente não perde comanda ao fechar navegador
-- **Lógica Simples**: Baseada em telefones únicos, não em comandas
+- **Verificação por Conteúdo**: Bloqueia mensagens com mesmo conteúdo em 30 segundos
+- **Logs Detalhados**: Identificação precisa de duplicações
+- **Bloqueio Inteligente**: Permite mensagens diferentes, bloqueia apenas duplicatas
+- **Janela de Tempo**: 30 segundos para evitar duplicações do N8N
 
-✅ **Cenários Suportados:**
-- **Múltiplos amigos**: Cada telefone único pode ter uma comanda
-- **Recuperação**: Cliente pode reabrir comanda com mesmo telefone
-- **Limite de Capacidade**: Máximo de telefones únicos = capacidade da mesa
-- **Flexibilidade**: Sistema funciona mesmo se cliente fechar navegador
+✅ **Cenários Resolvidos:**
+- **Duplicação N8N**: Múltiplas chamadas do N8N são bloqueadas
+- **Mensagens Únicas**: Cada mensagem aparece apenas uma vez
+- **Performance**: Verificação rápida por conteúdo e timestamp
+- **Debug**: Logs detalhados para identificar problemas
 
 ## 🔍 Como verificar se funcionou:
 
@@ -49,11 +50,10 @@ git add . && git commit -m "feat: implementar verificação por telefones único
 2. Verifique se aparece um novo commit recente
 3. Aguarde o deploy automático no Vercel
 4. Teste o sistema:
-   - Abra uma comanda com telefone A
-   - Abra outra comanda com telefone B (deve funcionar)
-   - Tente abrir com telefone A novamente (deve reutilizar comanda)
-   - Continue até atingir capacidade da mesa
-   - Verifique se aparece mensagem de limite atingido
+   - Envie uma mensagem no chat WhatsApp
+   - Verifique se aparece apenas uma vez
+   - Confirme que não há duplicação (enviada + recebida)
+   - Verifique os logs do Vercel para confirmar bloqueio
 
 ## ⚠️ Se der erro:
 
@@ -65,4 +65,4 @@ git add . && git commit -m "feat: implementar verificação por telefones único
 
 **Data:** 31/07/2025  
 **Arquivo:** COMANDOS_GIT.md  
-**Versão:** 2.6 - Verificação por Telefones Únicos
+**Versão:** 2.7 - Correção Duplicação WhatsApp
