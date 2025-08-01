@@ -87,7 +87,14 @@ export async function POST(request: NextRequest) {
       });
 
     } else if (acao === 'liberar') {
+      console.log('=== TENTANDO LIBERAR CONVERSA ===');
+      console.log('Modo atual da conversa:', conversa.modo_atendimento);
+      console.log('Conversa ID:', conversa_id);
+      console.log('Ação:', acao);
+      console.log('=== FIM LOGS LIBERAR ===');
+      
       if (conversa.modo_atendimento === 'bot') {
+        console.log('ERRO: Conversa já está em modo bot');
         return NextResponse.json(
           { error: 'Conversa já está em modo bot' },
           { status: 400 }
