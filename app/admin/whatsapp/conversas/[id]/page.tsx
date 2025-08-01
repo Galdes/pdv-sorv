@@ -44,7 +44,7 @@ export default function ChatPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
   const [assumindo, setAssumindo] = useState(false);
-  const [liberando, setLiberando] = useState(false);
+
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -180,39 +180,7 @@ export default function ChatPage() {
     }
   };
 
-  const liberarConversa = async () => {
-    if (!conversa) return;
 
-    setLiberando(true);
-    try {
-      const response = await fetch('/api/whatsapp/assumir-conversa', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          conversa_id: conversaId,
-          acao: 'liberar'
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao liberar conversa');
-      }
-
-      const result = await response.json();
-      console.log('Conversa liberada:', result);
-
-      // Recarregar conversa para atualizar status
-      await carregarConversa();
-    } catch (error) {
-      console.error('Erro ao liberar conversa:', error);
-      alert('Erro ao liberar conversa. Tente novamente.');
-    } finally {
-      setLiberando(false);
-    }
-  };
 
   const excluirConversa = async () => {
     if (!conversa) return;
@@ -450,8 +418,8 @@ export default function ChatPage() {
                 {enviando ? 'Enviando...' : 'Enviar'}
               </AdminButton>
               
-              {/* Botão Assumir/Liberar */}
-              {!isModoHumano ? (
+              {/* Botão Assumir (apenas quando não está em modo humano) */}
+              {!isModoHumano && (
                 <AdminButton
                   variant="secondary"
                   onClick={assumirConversa}
@@ -460,16 +428,6 @@ export default function ChatPage() {
                 >
                   <UserCheck size={18} />
                   {assumindo ? 'Assumindo...' : 'Assumir'}
-                </AdminButton>
-              ) : (
-                <AdminButton
-                  variant="danger"
-                  onClick={liberarConversa}
-                  disabled={liberando}
-                  className="flex items-center gap-2 px-4"
-                >
-                  <UserX size={18} />
-                  {liberando ? 'Liberando...' : 'Liberar'}
                 </AdminButton>
               )}
             </div>
