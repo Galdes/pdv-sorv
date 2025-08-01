@@ -127,6 +127,14 @@ export async function POST(request: NextRequest) {
       const agora = new Date();
       const bloqueioExpirado = conversaExistente.bloqueado_ate && new Date(conversaExistente.bloqueado_ate) < agora;
       
+      console.log('=== VERIFICAÇÃO MODO ATENDIMENTO ===');
+      console.log('Modo atual:', conversaExistente.modo_atendimento);
+      console.log('Bloqueado até:', conversaExistente.bloqueado_ate);
+      console.log('Agora:', agora.toISOString());
+      console.log('Bloqueio expirado:', bloqueioExpirado);
+      console.log('Deve bloquear processamento:', conversaExistente.modo_atendimento === 'humano' && !bloqueioExpirado);
+      console.log('=== FIM VERIFICAÇÃO ===');
+      
       if (conversaExistente.modo_atendimento === 'humano' && !bloqueioExpirado) {
         console.log('Conversa em modo humano - bloqueando processamento');
         // Atualizar conversa mas não processar

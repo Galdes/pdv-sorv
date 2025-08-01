@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "fix: resolver duplicação de mensagens WhatsApp - verificação por conteúdo"
+git commit -m "fix: adicionar logs para investigar bot respondendo em modo humano"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,31 +18,31 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "fix: resolver duplicação de mensagens WhatsApp - verificação por conteúdo" && git push origin main
+git add . && git commit -m "fix: adicionar logs para investigar bot respondendo em modo humano" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Correção da Duplicação de Mensagens WhatsApp**
-- **Problema**: Mensagens apareciam duplicadas (enviada + recebida) no chat
-- **Causa**: N8N enviando múltiplas chamadas ao webhook com mesmo conteúdo
-- **Solução**: Verificação de duplicação por conteúdo nos últimos 30 segundos
-- **Resultado**: Cada mensagem aparece apenas uma vez no chat
+✅ **Investigação do Bot Respondendo em Modo Humano**
+- **Problema**: Bot continua respondendo mesmo quando atendente assumiu conversa
+- **Causa**: Possível problema na verificação do modo de atendimento
+- **Solução**: Logs detalhados para identificar se a lógica está funcionando
+- **Resultado**: Identificação precisa do problema
 
 ✅ **Arquivos Modificados:**
-- `app/api/webhook/whatsapp/route.ts` - Nova lógica de verificação de duplicação
+- `app/api/webhook/whatsapp/route.ts` - Logs detalhados de verificação de modo
 
 ✅ **Funcionalidades Implementadas:**
-- **Verificação por Conteúdo**: Bloqueia mensagens com mesmo conteúdo em 30 segundos
-- **Logs Detalhados**: Identificação precisa de duplicações
-- **Bloqueio Inteligente**: Permite mensagens diferentes, bloqueia apenas duplicatas
-- **Janela de Tempo**: 30 segundos para evitar duplicações do N8N
+- **Logs de Modo**: Verificação detalhada do modo de atendimento
+- **Logs de Bloqueio**: Identificação se o bloqueio está funcionando
+- **Logs de Timestamp**: Verificação de expiração do bloqueio
+- **Debug Completo**: Rastreamento completo da lógica de intervenção humana
 
-✅ **Cenários Resolvidos:**
-- **Duplicação N8N**: Múltiplas chamadas do N8N são bloqueadas
-- **Mensagens Únicas**: Cada mensagem aparece apenas uma vez
-- **Performance**: Verificação rápida por conteúdo e timestamp
-- **Debug**: Logs detalhados para identificar problemas
+✅ **Cenários Investigados:**
+- **Modo Humano**: Se está sendo detectado corretamente
+- **Bloqueio Ativo**: Se o bloqueio ainda é válido
+- **Processamento**: Se está sendo bloqueado quando deveria
+- **Timestamps**: Se as datas estão corretas
 
 ## 🔍 Como verificar se funcionou:
 
@@ -50,10 +50,10 @@ git add . && git commit -m "fix: resolver duplicação de mensagens WhatsApp - v
 2. Verifique se aparece um novo commit recente
 3. Aguarde o deploy automático no Vercel
 4. Teste o sistema:
-   - Envie uma mensagem no chat WhatsApp
-   - Verifique se aparece apenas uma vez
-   - Confirme que não há duplicação (enviada + recebida)
-   - Verifique os logs do Vercel para confirmar bloqueio
+   - Assuma uma conversa como atendente
+   - Envie uma mensagem do cliente
+   - Verifique os logs do Vercel para ver se o bloqueio está funcionando
+   - Confirme se o bot não responde quando deveria estar bloqueado
 
 ## ⚠️ Se der erro:
 
@@ -65,4 +65,4 @@ git add . && git commit -m "fix: resolver duplicação de mensagens WhatsApp - v
 
 **Data:** 31/07/2025  
 **Arquivo:** COMANDOS_GIT.md  
-**Versão:** 2.7 - Correção Duplicação WhatsApp
+**Versão:** 2.8 - Investigação Bot em Modo Humano
