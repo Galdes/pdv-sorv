@@ -39,7 +39,15 @@ export async function POST(request: NextRequest) {
     console.log('Enviando via N8N (ngrok)...');
     
     // URL do webhook N8N via ngrok
-    const n8nWebhookUrl = process.env.N8N_SEND_WEBHOOK_URL || 'https://fff4bcf1d092.ngrok-free.app/webhook/send-message';
+    const n8nWebhookUrl = process.env.N8N_SEND_WEBHOOK_URL;
+    
+    if (!n8nWebhookUrl) {
+      console.error('N8N_SEND_WEBHOOK_URL não configurada no Vercel');
+      return NextResponse.json(
+        { error: 'Webhook N8N não configurado' },
+        { status: 500 }
+      );
+    }
     
     console.log('N8N Webhook URL (ngrok):', n8nWebhookUrl);
     console.log('Body para N8N:', { numero_cliente, mensagem });
