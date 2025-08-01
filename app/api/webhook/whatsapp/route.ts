@@ -108,10 +108,10 @@ export async function POST(request: NextRequest) {
     console.log('Timestamp:', mensagem.timestamp);
     console.log('Vem do N8N:', isFromN8N);
     
-    // Se vem do N8N e o tipo é "sistema", é sempre mensagem do usuário
+    // Se vem do N8N e o tipo é "sistema", é resposta do bot
     if (isFromN8N && tipoMensagem === 'sistema') {
-      tipoMensagem = 'recebida'; // N8N envia mensagens do usuário
-      console.log('Tipo "sistema" do N8N alterado para "recebida" (mensagem do usuário)');
+      tipoMensagem = 'enviada'; // N8N salva respostas do bot
+      console.log('Tipo "sistema" do N8N alterado para "enviada" (resposta do bot)');
     } else if (tipoMensagem === 'sistema') {
       tipoMensagem = 'enviada'; // Mudar para 'enviada' que é aceito pelo banco
       console.log('Tipo "sistema" alterado para "enviada"');
