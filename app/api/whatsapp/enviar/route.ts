@@ -51,9 +51,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         numero_cliente: numero_cliente,
-        mensagem: mensagem,
-        tipo: 'sistema',
-        timestamp: new Date().toISOString()
+        mensagem: mensagem
       })
     });
 
