@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
       
       if (conversaExistente.modo_atendimento === 'humano' && !bloqueioExpirado) {
         console.log('Conversa em modo humano - bloqueando processamento');
-        // Atualizar conversa mas não processar
+        // Atualizar conversa mas não processar nem salvar mensagem
         const { data: conversaAtualizada, error: errorConversa } = await supabase
           .from('conversas_whatsapp')
           .update({
@@ -156,26 +156,10 @@ export async function POST(request: NextRequest) {
         }
         conversaId = conversaAtualizada.id;
         
-        // Salvar mensagem mas não processar
-        const { error: errorMensagem } = await supabase
-          .from('mensagens_whatsapp')
-          .insert({
-            conversa_id: conversaId,
-            tipo: tipoMensagem,
-            conteudo: mensagem.conteudo,
-            timestamp: new Date().toISOString(),
-            lida: tipoMensagem === 'recebida' ? false : true
-          });
-
-        if (errorMensagem) {
-          console.error('Erro ao salvar mensagem:', errorMensagem);
-          throw errorMensagem;
-        }
-
-        console.log('Mensagem salva em modo humano - processamento bloqueado');
+        console.log('Mensagem ignorada em modo humano - nem salva nem processa');
         return NextResponse.json({
           success: true,
-          message: 'Mensagem salva em modo humano',
+          message: 'Mensagem ignorada em modo humano',
           conversa_id: conversaId,
           modo: 'humano',
           timestamp: new Date().toISOString()

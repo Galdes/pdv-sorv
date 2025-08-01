@@ -9,7 +9,7 @@
 git add .
 
 # 2. Fazer commit com mensagem
-git commit -m "fix: adicionar logs para investigar bot respondendo em modo humano"
+git commit -m "fix: resolver duplicação em modo humano - não salvar mensagem"
 
 # 3. Enviar para o GitHub
 git push origin main
@@ -18,31 +18,31 @@ git push origin main
 ### **Opção 2: Comando Único**
 
 ```bash
-git add . && git commit -m "fix: adicionar logs para investigar bot respondendo em modo humano" && git push origin main
+git add . && git commit -m "fix: resolver duplicação em modo humano - não salvar mensagem" && git push origin main
 ```
 
 ## 📝 O que será enviado:
 
-✅ **Investigação do Bot Respondendo em Modo Humano**
-- **Problema**: Bot continua respondendo mesmo quando atendente assumiu conversa
-- **Causa**: Possível problema na verificação do modo de atendimento
-- **Solução**: Logs detalhados para identificar se a lógica está funcionando
-- **Resultado**: Identificação precisa do problema
+✅ **Correção da Duplicação em Modo Humano**
+- **Problema**: Bot parou de responder mas voltou a duplicar mensagens
+- **Causa**: Em modo humano, webhook salvava mensagem mas não processava
+- **Solução**: Em modo humano, nem salvar nem processar mensagem
+- **Resultado**: Sem duplicação e bot bloqueado corretamente
 
 ✅ **Arquivos Modificados:**
-- `app/api/webhook/whatsapp/route.ts` - Logs detalhados de verificação de modo
+- `app/api/webhook/whatsapp/route.ts` - Lógica de modo humano ajustada
 
 ✅ **Funcionalidades Implementadas:**
-- **Logs de Modo**: Verificação detalhada do modo de atendimento
-- **Logs de Bloqueio**: Identificação se o bloqueio está funcionando
-- **Logs de Timestamp**: Verificação de expiração do bloqueio
-- **Debug Completo**: Rastreamento completo da lógica de intervenção humana
+- **Modo Humano**: Não salva nem processa mensagens
+- **Bloqueio Total**: Bot completamente desabilitado em modo humano
+- **Sem Duplicação**: Mensagens não são salvas quando atendente assumiu
+- **Logs Detalhados**: Rastreamento completo da lógica
 
-✅ **Cenários Investigados:**
-- **Modo Humano**: Se está sendo detectado corretamente
-- **Bloqueio Ativo**: Se o bloqueio ainda é válido
-- **Processamento**: Se está sendo bloqueado quando deveria
-- **Timestamps**: Se as datas estão corretas
+✅ **Cenários Resolvidos:**
+- **Bot Bloqueado**: Não responde quando atendente assumiu
+- **Sem Duplicação**: Mensagens não aparecem duplicadas
+- **Modo Humano**: Funciona corretamente para atendente
+- **Performance**: Menos processamento desnecessário
 
 ## 🔍 Como verificar se funcionou:
 
@@ -52,8 +52,8 @@ git add . && git commit -m "fix: adicionar logs para investigar bot respondendo 
 4. Teste o sistema:
    - Assuma uma conversa como atendente
    - Envie uma mensagem do cliente
-   - Verifique os logs do Vercel para ver se o bloqueio está funcionando
-   - Confirme se o bot não responde quando deveria estar bloqueado
+   - Confirme que não há duplicação
+   - Verifique que o bot não responde
 
 ## ⚠️ Se der erro:
 
@@ -65,4 +65,4 @@ git add . && git commit -m "fix: adicionar logs para investigar bot respondendo 
 
 **Data:** 31/07/2025  
 **Arquivo:** COMANDOS_GIT.md  
-**Versão:** 2.8 - Investigação Bot em Modo Humano
+**Versão:** 2.9 - Correção Duplicação em Modo Humano
