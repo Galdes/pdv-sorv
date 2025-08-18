@@ -280,6 +280,18 @@ export interface ConfigWhatsApp {
   updated_at?: string;
 }
 
+export interface ConfigZAPI {
+  id?: string;
+  bar_id: string;
+  ativo: boolean;
+  instancia_id: string;
+  token: string;
+  status_conexao: 'conectado' | 'desconectado' | 'reconectando';
+  ultima_verificacao?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface ConversaWhatsApp {
   id?: string;
   bar_id: string;
@@ -321,4 +333,10 @@ export interface FormPedidoExterno {
   endereco?: FormEnderecoEntrega;
   observacoes?: string;
   itens: ItemCarrinhoDelivery[];
+}
+
+export interface FormZAPI {
+  instancia_id: string;
+  token: string;
+  ativo: boolean;
 } 

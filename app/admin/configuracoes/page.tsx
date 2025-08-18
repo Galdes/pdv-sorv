@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabaseClient';
-import type { Bar, FormBar } from '../../../lib/types';
+import type { Bar, FormBar, ConfigZAPI, FormZAPI } from '../../../lib/types';
 import AdminLayout, { 
   AdminCard, 
   AdminButton, 
@@ -26,6 +26,19 @@ export default function ConfiguracoesPage() {
     descricao: '',
     ativo: true
   });
+  
+  // Estados para Z-API
+  const [zapiConfig, setZapiConfig] = useState<ConfigZAPI | null>(null);
+  const [zapiForm, setZapiForm] = useState<FormZAPI>({
+    instancia_id: '',
+    token: '',
+    ativo: false
+  });
+  const [zapiLoading, setZapiLoading] = useState(false);
+  const [zapiStatus, setZapiStatus] = useState<'conectado' | 'desconectado' | 'reconectando'>('desconectado');
+  const [testandoConexao, setTestandoConexao] = useState(false);
+  const [reconectando, setReconectando] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   useEffect(() => {
     const userData = localStorage.getItem('adminUser');
@@ -69,6 +82,34 @@ export default function ConfiguracoesPage() {
         descricao: barData.descricao || '',
         ativo: barData.ativo
       });
+
+      // Buscar configurações da Z-API
+      const { data: zapiData, error: errZapi } = await supabase
+        .from('config_zapi')
+        .select('*')
+        .eq('bar_id', adminUser.bar_id)
+        .single();
+
+      if (errZapi && errZapi.code !== 'PGRST116') {
+        console.error('Erro ao buscar configurações Z-API:', errZapi);
+      }
+
+      if (zapiData) {
+        setZapiConfig(zapiData);
+        setZapiForm({
+          instancia_id: zapiData.instancia_id || '',
+          token: zapiData.token || '',
+          ativo: zapiData.ativo || false
+        });
+        setZapiStatus(zapiData.status_conexao || 'desconectado');
+      } else {
+        // Configuração padrão se não existir
+        setZapiForm({
+          instancia_id: '3E29A3AF9423B0EA10A44AAAADA6D328',
+          token: '7D1DE18113C654C07EA765C7',
+          ativo: true
+        });
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao buscar dados do estabelecimento');
     } finally {
@@ -131,6 +172,102 @@ export default function ConfiguracoesPage() {
 
   const handleBack = () => {
     router.push('/admin/dashboard');
+  };
+
+  // Funções para Z-API
+  const testarConexaoZAPI = async () => {
+    setTestandoConexao(true);
+    setDebugInfo(null);
+    try {
+      const response = await fetch('/api/zapi/testar-conexao', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          instancia_id: zapiForm.instancia_id,
+          token: zapiForm.token
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setZapiStatus(result.status || 'desconectado');
+        setDebugInfo(result.debug || null);
+        
+        if (result.status === 'conectado') {
+          setSuccess('Conexão Z-API testada com sucesso! ✅');
+        } else {
+          setError(`Z-API está desconectada. Verifique as configurações.`);
+        }
+      } else {
+        setZapiStatus('desconectado');
+        setError('Falha na conexão com Z-API');
+      }
+    } catch (error) {
+      setZapiStatus('desconectado');
+      setError('Erro ao testar conexão Z-API');
+    } finally {
+      setTestandoConexao(false);
+    }
+  };
+
+  const reconectarZAPI = async () => {
+    setReconectando(true);
+    try {
+      const response = await fetch('/api/zapi/reconectar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          instancia_id: zapiForm.instancia_id,
+          token: zapiForm.token
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setZapiStatus(result.status || 'conectado');
+        setSuccess('Z-API reconectada com sucesso!');
+      } else {
+        setZapiStatus('desconectado');
+        setError('Falha ao reconectar Z-API');
+      }
+    } catch (error) {
+      setZapiStatus('desconectado');
+      setError('Erro ao reconectar Z-API');
+    } finally {
+      setReconectando(false);
+    }
+  };
+
+  const salvarConfigZAPI = async () => {
+    setZapiLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('config_zapi')
+        .upsert({
+          bar_id: adminUser.bar_id,
+          instancia_id: zapiForm.instancia_id,
+          token: zapiForm.token,
+          ativo: zapiForm.ativo,
+          status_conexao: zapiStatus,
+          ultima_verificacao: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'bar_id'
+        });
+
+      if (error) throw error;
+      
+      setSuccess('Configurações Z-API salvas com sucesso!');
+      fetchBarData(); // Recarregar dados
+    } catch (error: any) {
+      setError('Erro ao salvar configurações Z-API: ' + error.message);
+    } finally {
+      setZapiLoading(false);
+    }
   };
 
   if (loading) {
@@ -263,6 +400,133 @@ export default function ConfiguracoesPage() {
             </AdminButton>
           </div>
         </form>
+      </AdminCard>
+
+      <AdminCard title="Configurações Z-API (WhatsApp)">
+        <div className="space-y-4">
+          {/* Status da Conexão */}
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Status da Conexão:</span>
+              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                zapiStatus === 'conectado' ? 'bg-green-100 text-green-800' :
+                zapiStatus === 'reconectando' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {zapiStatus === 'conectado' ? '🟢 Conectado' :
+                 zapiStatus === 'reconectando' ? '🟡 Reconectando' :
+                 '🔴 Desconectado'}
+              </span>
+            </div>
+            <div className="text-xs text-gray-500">
+              Última verificação: {zapiConfig?.ultima_verificacao ? 
+                new Date(zapiConfig.ultima_verificacao).toLocaleString('pt-BR') : 
+                'Nunca'}
+            </div>
+          </div>
+
+          {/* Campos de Configuração */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <AdminInput
+              label="ID da Instância"
+              tooltip="ID da instância Z-API"
+              type="text"
+              value={zapiForm.instancia_id}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setZapiForm({...zapiForm, instancia_id: e.target.value})}
+              placeholder="Ex: 3E29A3AF9423B0EA10A44AAAADA6D328"
+              title="Digite o ID da instância Z-API"
+            />
+            
+            <AdminInput
+              label="Token"
+              tooltip="Token de autenticação Z-API"
+              type="password"
+              value={zapiForm.token}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setZapiForm({...zapiForm, token: e.target.value})}
+              placeholder="Ex: 7D1DE18113C654C07EA765C7"
+              title="Digite o token Z-API"
+            />
+          </div>
+
+          {/* Checkbox Ativo */}
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="zapi_ativo"
+              checked={zapiForm.ativo}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setZapiForm({...zapiForm, ativo: e.target.checked})}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="zapi_ativo" className="ml-2 text-sm text-gray-700">
+              Z-API ativa
+            </label>
+          </div>
+
+          {/* Botões de Ação */}
+          <div className="flex flex-wrap gap-3 pt-4">
+            <AdminButton
+              type="button"
+              variant="primary"
+              onClick={testarConexaoZAPI}
+              disabled={testandoConexao}
+              title="Testar conexão com Z-API"
+            >
+              {testandoConexao ? 'Testando...' : '🧪 Testar Conexão'}
+            </AdminButton>
+            
+            <AdminButton
+              type="button"
+              variant="warning"
+              onClick={reconectarZAPI}
+              disabled={reconectando || zapiStatus === 'conectado'}
+              title="Forçar reconexão da Z-API"
+            >
+              {reconectando ? 'Reconectando...' : '🔄 Reconectar'}
+            </AdminButton>
+            
+            <AdminButton
+              type="button"
+              variant="success"
+              onClick={salvarConfigZAPI}
+              disabled={zapiLoading}
+              title="Salvar configurações Z-API"
+            >
+              {zapiLoading ? 'Salvando...' : '💾 Salvar Configurações'}
+            </AdminButton>
+          </div>
+
+          {/* Informações de Debug */}
+          {debugInfo && (
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">🔍 Informações de Debug:</h4>
+              <div className="text-xs text-gray-600 space-y-1">
+                <div><strong>Status Detectado:</strong> {debugInfo.isConnected ? 'Conectado' : 'Desconectado'}</div>
+                {debugInfo.errorInfo && (
+                  <div><strong>Erro:</strong> {debugInfo.errorInfo}</div>
+                )}
+                {debugInfo.hasStatusData && (
+                  <div><strong>Dados de Status:</strong> Disponível</div>
+                )}
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-blue-600 hover:text-blue-800">
+                    Ver dados completos
+                  </summary>
+                  <pre className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
+                    {JSON.stringify(debugInfo, null, 2)}
+                  </pre>
+                </details>
+              </div>
+            </div>
+          )}
+
+          {/* Informações Adicionais */}
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>ℹ️ Informações:</strong> A Z-API é usada para envio e recebimento de mensagens WhatsApp. 
+              Em caso de problemas de conexão, use o botão "Reconectar" para restabelecer a comunicação.
+            </p>
+          </div>
+        </div>
       </AdminCard>
 
       {adminUser.tipo !== 'dono_bar' && (
