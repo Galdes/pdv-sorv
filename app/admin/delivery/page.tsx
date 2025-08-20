@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabaseClient';
 import AdminLayout, { AdminCard, AdminButton } from '../../../components/AdminLayout';
+import { usePrint } from '../../../lib/hooks/usePrint';
 import { 
   Truck, 
   Store, 
@@ -61,6 +62,7 @@ export default function AdminDeliveryPage() {
     cancelados: 0
   });
   const router = useRouter();
+  const { printThermal, isPrinting, printError, clearError } = usePrint();
 
   useEffect(() => {
     carregarPedidos();
@@ -168,7 +170,7 @@ export default function AdminDeliveryPage() {
     }
   };
 
-  const imprimirPedido = (pedido: PedidoExterno) => {
+  const imprimirPedido = async (pedido: PedidoExterno) => {
     const dataFormatada = new Date(pedido.created_at).toLocaleString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -216,59 +218,16 @@ ${'-'.repeat(48)}
 ${'='.repeat(48)}
 `;
 
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.style.position = 'fixed';
-    iframe.style.left = '-9999px';
-    document.body.appendChild(iframe);
-
-    iframe.contentDocument?.write(`
-      <html>
-        <head>
-          <title>Pedido #${pedido.id.slice(-8).toUpperCase()}</title>
-          <style>
-            body {
-              font-family: 'Courier New', monospace;
-              font-size: 11px;
-              line-height: 1.1;
-              margin: 0;
-              padding: 5px;
-              white-space: pre;
-              background: white;
-              width: 80mm;
-              max-width: 80mm;
-            }
-            @media print {
-              body { 
-                margin: 0; 
-                padding: 0;
-                width: 80mm;
-                max-width: 80mm;
-              }
-              @page {
-                margin: 0;
-                size: 80mm auto;
-                width: 80mm;
-              }
-              * {
-                -webkit-print-color-adjust: exact;
-                color-adjust: exact;
-              }
-            }
-          </style>
-        </head>
-        <body>${conteudoImpressao}</body>
-      </html>
-    `);
-    
-    iframe.contentDocument?.close();
-    
-    iframe.onload = () => {
-      iframe.contentWindow?.print();
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 1000);
-    };
+    try {
+      const result = await printThermal(conteudoImpressao, `Pedido #${pedido.id.slice(-8).toUpperCase()}`);
+      
+      if (!result.success) {
+        alert(`Erro ao imprimir: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Erro ao imprimir pedido:', error);
+      alert('Erro ao imprimir pedido');
+    }
   };
 
   const formatarData = (data: string) => {
@@ -391,6 +350,25 @@ ${'='.repeat(48)}
             </div>
           </div>
         </div>
+
+        {/* Notificação de Erro de Impressão */}
+        {printError && (
+          <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={20} className="text-red-500" />
+                <span className="text-red-800 font-medium">Erro na Impressão</span>
+              </div>
+              <button
+                onClick={clearError}
+                className="text-red-500 hover:text-red-700"
+              >
+                <XCircle size={20} />
+              </button>
+            </div>
+            <p className="text-red-700 mt-2">{printError}</p>
+          </div>
+        )}
 
         {/* Filtros */}
         <AdminCard>
@@ -626,9 +604,10 @@ ${'='.repeat(48)}
                   <AdminButton
                     variant="primary"
                     onClick={() => imprimirPedido(pedido)}
+                    disabled={isPrinting}
                   >
                     <Printer size={16} className="mr-2" />
-                    Imprimir Pedido
+                    {isPrinting ? 'Imprimindo...' : 'Imprimir Pedido'}
                   </AdminButton>
 
                   {pedido.status === 'pendente' && (
