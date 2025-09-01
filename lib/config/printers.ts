@@ -106,6 +106,8 @@ export function generatePrinterCSS(config: PrinterConfig): string {
         width: ${config.width} !important;
         max-width: ${config.width} !important;
         orientation: ${config.orientation} !important;
+        page-break-after: avoid !important;
+        page-break-before: avoid !important;
       }
       
       * {
@@ -121,6 +123,21 @@ export function generatePrinterCSS(config: PrinterConfig): string {
         padding: 0 !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
+        page-break-after: avoid !important;
+        page-break-before: avoid !important;
+      }
+      
+      /* Evitar quebras de página desnecessárias */
+      body {
+        page-break-after: avoid !important;
+        page-break-before: avoid !important;
+      }
+      
+      /* Garantir que o conteúdo não quebre em páginas desnecessárias */
+      .print-preview {
+        page-break-after: avoid !important;
+        page-break-before: avoid !important;
+        page-break-inside: avoid !important;
       }
     }
     

@@ -210,13 +210,12 @@ ${'-'.repeat(48)}
 TOTAL: R$ ${pedido.valor_total.toFixed(2).replace('.', ',')}
 ${pedido.valor_troco && pedido.valor_troco > 0 ? `TROCO: R$ ${pedido.valor_troco.toFixed(2).replace('.', ',')}\n` : ''}${'-'.repeat(48)}
 OBSERVAÇÕES:
-${pedido.observacoes || 'Nenhuma observação'}
+**${pedido.observacoes || 'Nenhuma observação'}**
 ${'-'.repeat(48)}
            OBRIGADO PELA PREFERÊNCIA!
 
         Nosso Instagram: @containersorv
-${'='.repeat(48)}
-`;
+${'='.repeat(48)}`;
 
     try {
       const result = await printThermal(conteudoImpressao, `Pedido #${pedido.id.slice(-8).toUpperCase()}`);
