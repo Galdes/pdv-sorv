@@ -174,43 +174,31 @@ export async function POST(request: NextRequest) {
         }
         conversaId = conversaAtualizada.id;
         
-        // Se for mensagem enviada pelo sistema, salvar mas não processar
-        if (tipoMensagem === 'enviada') {
-          console.log('Mensagem enviada pelo sistema em modo humano - salvando mas não processando');
-          
-          const { error: errorMensagem } = await supabase
-            .from('mensagens_whatsapp')
-            .insert({
-              conversa_id: conversaId,
-              tipo: tipoMensagem,
-              conteudo: mensagem.conteudo,
-              timestamp: new Date().toISOString(),
-              lida: true
-            });
-
-          if (errorMensagem) {
-            console.error('Erro ao salvar mensagem:', errorMensagem);
-            throw errorMensagem;
-          }
-
-          return NextResponse.json({
-            success: true,
-            message: 'Mensagem enviada salva em modo humano',
+        // Em modo humano, salvar todas as mensagens (recebidas e enviadas)
+        console.log('Modo humano - salvando mensagem:', tipoMensagem);
+        
+        const { error: errorMensagem } = await supabase
+          .from('mensagens_whatsapp')
+          .insert({
             conversa_id: conversaId,
-            modo: 'humano',
-            timestamp: new Date().toISOString()
+            tipo: tipoMensagem,
+            conteudo: mensagem.conteudo,
+            timestamp: new Date().toISOString(),
+            lida: tipoMensagem === 'recebida' ? false : true
           });
-        } else {
-          // Se for mensagem recebida, ignorar completamente
-          console.log('Mensagem recebida em modo humano - ignorando completamente');
-          return NextResponse.json({
-            success: true,
-            message: 'Mensagem recebida ignorada em modo humano',
-            conversa_id: conversaId,
-            modo: 'humano',
-            timestamp: new Date().toISOString()
-          });
+
+        if (errorMensagem) {
+          console.error('Erro ao salvar mensagem:', errorMensagem);
+          throw errorMensagem;
         }
+
+        return NextResponse.json({
+          success: true,
+          message: 'Mensagem salva em modo humano',
+          conversa_id: conversaId,
+          modo: 'humano',
+          timestamp: new Date().toISOString()
+        });
       } else if (bloqueioExpirado) {
         console.log('Bloqueio expirado - voltando para modo bot');
         // Liberar conversa automaticamente
