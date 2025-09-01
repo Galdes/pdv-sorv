@@ -40,25 +40,15 @@ export function usePrint() {
       const printerConfig = getPrinterConfig(printerName as keyof typeof import('../config/printers').PRINTER_TYPES);
       const printerCSS = generatePrinterCSS(printerConfig);
 
-      // Criar iframe para impressão
-      const printFrame = document.createElement('iframe');
-      printFrame.style.display = 'none';
-      printFrame.style.position = 'fixed';
-      printFrame.style.left = '-9999px';
-      printFrame.style.top = '-9999px';
-      printFrame.style.width = '80mm';
-      printFrame.style.height = 'auto';
-      printFrame.style.border = 'none';
+      // Criar nova janela para impressão
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      
+      if (!printWindow) {
+        throw new Error('Não foi possível abrir janela de impressão. Verifique se o bloqueador de pop-ups está desabilitado.');
+      }
 
-      document.body.appendChild(printFrame);
-
-      // Aguardar o iframe carregar
-      await new Promise<void>((resolve) => {
-        printFrame.onload = () => resolve();
-      });
-
-            // Escrever conteúdo HTML otimizado para impressão térmica
-      printFrame.contentDocument?.write(`
+      // Escrever conteúdo HTML otimizado para impressão térmica
+      printWindow.document.write(`
         <!DOCTYPE html>
         <html>
         <head>
@@ -83,47 +73,24 @@ export function usePrint() {
         </html>
       `);
 
-      printFrame.contentDocument?.close();
+      printWindow.document.close();
 
       // Aguardar um pouco para garantir que o conteúdo foi renderizado
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Tentar imprimir
-      if (printFrame.contentWindow) {
-        // Configurar opções de impressão se disponíveis
-        if ('print' in printFrame.contentWindow) {
-          // Tentar usar a API de impressão moderna se disponível
-          try {
-            // @ts-ignore - Verificar se a API de impressão está disponível
-            if (printFrame.contentWindow.print && typeof printFrame.contentWindow.print === 'function') {
-              printFrame.contentWindow.print();
-              
-              // Aguardar a impressão ser concluída
-              await new Promise(resolve => setTimeout(resolve, 2000));
-              
-              return {
-                success: true,
-                message: 'Documento enviado para impressão com sucesso'
-              };
-            }
-          } catch (error) {
-            console.warn('Erro na API de impressão moderna:', error);
-          }
-        }
-
-        // Fallback para método tradicional
-        printFrame.contentWindow.print();
-        
-        // Aguardar a impressão ser concluída
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        return {
-          success: true,
-          message: 'Documento enviado para impressão com sucesso'
-        };
-      }
-
-      throw new Error('Não foi possível acessar a janela de impressão');
+      // Imprimir
+      printWindow.print();
+      
+      // Aguardar a impressão ser concluída
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Fechar a janela
+      printWindow.close();
+      
+      return {
+        success: true,
+        message: 'Documento enviado para impressão com sucesso'
+      };
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido na impressão';
@@ -136,14 +103,6 @@ export function usePrint() {
       };
     } finally {
       setIsPrinting(false);
-      
-      // Limpar o iframe após um delay para permitir que a impressão seja processada
-      setTimeout(() => {
-        const existingFrame = document.querySelector('iframe[style*="left: -9999px"]');
-        if (existingFrame) {
-          document.body.removeChild(existingFrame);
-        }
-      }, 3000);
     }
   }, []);
 
