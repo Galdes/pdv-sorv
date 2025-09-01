@@ -17,7 +17,7 @@ export const THERMAL_80MM: PrinterConfig = {
   height: 'auto',
   fontSize: '10px',
   lineHeight: '1.2',
-  margins: '0 0 0 2mm', // top right bottom left - margem esquerda de 2mm
+  margins: '0', // Sem margens - deixar o navegador decidir
   orientation: 'portrait',
   fontFamily: 'Courier New, Monaco, Menlo, monospace'
 };
