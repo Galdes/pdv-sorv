@@ -135,13 +135,15 @@ export function usePrint() {
         message: 'Falha ao imprimir documento'
       };
     } finally {
-      // Limpar o iframe
-      const existingFrame = document.querySelector('iframe[style*="left: -9999px"]');
-      if (existingFrame) {
-        document.body.removeChild(existingFrame);
-      }
-      
       setIsPrinting(false);
+      
+      // Limpar o iframe após um delay para permitir que a impressão seja processada
+      setTimeout(() => {
+        const existingFrame = document.querySelector('iframe[style*="left: -9999px"]');
+        if (existingFrame) {
+          document.body.removeChild(existingFrame);
+        }
+      }, 3000);
     }
   }, []);
 
