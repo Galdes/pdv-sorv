@@ -59,7 +59,7 @@ export default function AdminProdutosPage() {
     setLoading(true);
     setError(null);
     try {
-      // Buscar produtos diretamente da tabela (teste)
+      // Buscar produtos diretamente da tabela (incluindo inativos)
       const { data: produtos, error: errProdutos } = await supabase
         .from('produtos')
         .select(`
@@ -67,7 +67,6 @@ export default function AdminProdutosPage() {
           categorias(nome)
         `)
         .eq('bar_id', adminUser.bar_id)
-        .eq('ativo', true)
         .order('nome');
       
       if (errProdutos) throw errProdutos;
