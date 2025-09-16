@@ -144,21 +144,6 @@ export default function AdminLoginPage() {
             </button>
           </form>
           
-          <div className="mt-6 text-center text-sm text-gray-600">
-            <p className="font-medium mb-3">Dados de teste:</p>
-            <div className="space-y-3">
-              <div className="border-l-4 border-purple-500 pl-3 py-2 bg-purple-50 rounded-r">
-                <p className="font-medium text-purple-800">Dono do Bar:</p>
-                <p className="text-purple-900">Email: dono@bar.com</p>
-                <p className="text-purple-900">Senha: dono123</p>
-              </div>
-              <div className="border-l-4 border-blue-500 pl-3 py-2 bg-blue-50 rounded-r">
-                <p className="font-medium text-blue-800">Garçom:</p>
-                <p className="text-blue-900">Email: garcon@bar.com</p>
-                <p className="text-blue-900">Senha: garcon123</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       
